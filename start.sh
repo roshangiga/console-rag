@@ -32,6 +32,10 @@ cleanup() {
         echo "Stopping Vue.js frontend (PID: $FRONTEND_PID)..."
         kill $FRONTEND_PID 2>/dev/null
     fi
+    if [ ! -z "$PHPMYADMIN_PID" ]; then
+        echo "Stopping phpMyAdmin (PID: $PHPMYADMIN_PID)..."
+        kill $PHPMYADMIN_PID 2>/dev/null
+    fi
     echo "✅ All servers stopped."
     exit 0
 }
@@ -63,6 +67,12 @@ if ! command -v npm &> /dev/null; then
     exit 1
 fi
 
+# Check if MySQL is installed
+if ! command -v mysql &> /dev/null; then
+    echo "❌ MySQL is not installed. Please install MySQL server."
+    exit 1
+fi
+
 echo "✅ All dependencies are available."
 echo ""
 
@@ -87,10 +97,19 @@ if [ ! -f ".env" ]; then
     php artisan key:generate
 fi
 
+# Create MySQL database if it doesn't exist
+echo "Setting up MySQL database..."
+mysql -u root -e "CREATE DATABASE IF NOT EXISTS console_rag;" 2>/dev/null || {
+    echo "⚠️  Could not create database. Please ensure MySQL is running and accessible."
+    echo "   You may need to run: sudo systemctl start mysql"
+    echo "   Or start MySQL manually."
+}
+
 # Run migrations and seeders
 echo "Setting up database..."
 if ! php artisan migrate --force; then
     echo "❌ Database migration failed."
+    echo "   Please ensure MySQL is running and the database 'console_rag' exists."
     exit 1
 fi
 if ! php artisan db:seed --force; then
@@ -163,11 +182,30 @@ else
     exit 1
 fi
 
+# Start phpMyAdmin in background
+cd ../phpmyadmin
+echo "🗄️  Starting phpMyAdmin on http://localhost:8080..."
+php -S localhost:8080 > /dev/null 2>&1 &
+PHPMYADMIN_PID=$!
+
+# Wait a moment for phpMyAdmin to start
+sleep 2
+
+# Check if phpMyAdmin started successfully
+if ps -p $PHPMYADMIN_PID > /dev/null; then
+    echo "✅ phpMyAdmin started successfully (PID: $PHPMYADMIN_PID)"
+else
+    echo "❌ Failed to start phpMyAdmin"
+    # Don't exit on phpMyAdmin failure, it's not critical
+fi
+
 echo ""
 echo "🎉 Console Project is now running!"
 echo "=================================="
 echo "🌐 Frontend: http://localhost:3000"
 echo "🔗 Backend API: http://localhost:8000/api"
+echo "📚 API Documentation: http://localhost:8000/api/documentation"
+echo "🗄️  phpMyAdmin: http://localhost:8080"
 echo "📧 Demo Login: admin@maurtiustelecom.mu / password"
 echo ""
 echo "Press Ctrl+C to stop all servers..."
