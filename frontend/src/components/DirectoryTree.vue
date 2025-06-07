@@ -7,6 +7,13 @@
         </v-list-item-title>
       </v-list-item>
       
+      <v-list-item
+        prepend-icon="mdi-folder-open"
+        title="File Browser"
+        to="/browse"
+        class="text-primary"
+      />
+      
       <v-divider />
       
       <div v-if="directoriesStore.loading" class="text-center pa-4">

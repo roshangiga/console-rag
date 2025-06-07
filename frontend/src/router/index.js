@@ -3,6 +3,7 @@ import { useAuthStore } from '@/stores/auth'
 import HomeView from '@/views/HomeView.vue'
 import LoginView from '@/views/LoginView.vue'
 import DocumentsView from '@/views/DocumentsView.vue'
+import FileBrowserView from '@/views/FileBrowserView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -22,6 +23,12 @@ const router = createRouter({
       path: '/documents',
       name: 'documents',
       component: DocumentsView,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/browse',
+      name: 'file-browser',
+      component: FileBrowserView,
       meta: { requiresAuth: true }
     }
   ]

@@ -15,6 +15,7 @@ Route::get('/auth/user', [AuthController::class, 'user'])->middleware('auth:sanc
 Route::middleware('auth:sanctum')->group(function () {
     // Directory routes
     Route::get('/directories', [DirectoryController::class, 'index']);
+    Route::get('/directories/{id}/contents', [DirectoryController::class, 'getContents']);
     Route::post('/directories', [DirectoryController::class, 'store']);
     Route::put('/directories/{id}', [DirectoryController::class, 'update']);
     Route::delete('/directories/{id}', [DirectoryController::class, 'destroy']);

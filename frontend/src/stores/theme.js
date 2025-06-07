@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 
 export const useThemeStore = defineStore('theme', () => {
   const isDark = ref(false); // Default to false, will be set by initializeTheme

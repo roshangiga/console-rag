@@ -34,4 +34,17 @@ class Directory extends Model
     {
         return $this->hasMany(Document::class);
     }
+
+    public function getFullPathAttribute()
+    {
+        $path = collect();
+        $current = $this;
+        
+        while ($current) {
+            $path->prepend($current->name);
+            $current = $current->parent;
+        }
+        
+        return $path->count() > 0 ? '/' . $path->implode('/') : '/';
+    }
 }

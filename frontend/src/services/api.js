@@ -44,6 +44,7 @@ export const apiService = {
 
   // Directories
   getDirectories: () => apiClient.get('/directories'),
+  getDirectoryContents: (id) => apiClient.get(`/directories/${id}/contents`),
   createDirectory: (data) => apiClient.post('/directories', data),
   updateDirectory: (id, data) => apiClient.put(`/directories/${id}`, data),
   deleteDirectory: (id) => apiClient.delete(`/directories/${id}`),

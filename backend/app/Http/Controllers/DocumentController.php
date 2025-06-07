@@ -30,6 +30,16 @@ class DocumentController extends Controller
 
         $documents = $query->orderBy('created_at', 'desc')->get();
 
+        // Load directory parents for full path calculation
+        $documents->each(function ($document) {
+            if ($document->directory) {
+                $document->directory->loadMissing('parent.parent.parent.parent.parent');
+                $document->directory_path = $document->directory->full_path;
+            } else {
+                $document->directory_path = 'Root';
+            }
+        });
+
         return response()->json($documents);
     }
 

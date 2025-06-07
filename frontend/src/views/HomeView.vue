@@ -75,9 +75,29 @@
         <v-row class="mt-6">
           <v-col cols="12" lg="8">
             <v-card>
-              <v-card-title>Recent Documents</v-card-title>
+              <v-card-title class="d-flex align-center justify-space-between">
+                <span>Recent Documents</span>
+                <div v-if="!documentsStore.loading" class="text-caption text-medium-emphasis">
+                  {{ recentDocuments.length }} of {{ sortedDocuments.length }} documents
+                </div>
+              </v-card-title>
               <v-card-text>
-                <v-list>
+                <!-- Loading state -->
+                <div v-if="documentsStore.loading" class="text-center py-8">
+                  <v-progress-circular
+                    indeterminate
+                    color="primary"
+                    size="48"
+                    class="mb-4"
+                  />
+                  <div class="text-h6 text-medium-emphasis">Loading documents...</div>
+                  <div class="text-body-2 text-medium-emphasis mt-2">
+                    Please wait while we fetch your recent documents
+                  </div>
+                </div>
+                
+                <!-- Documents list -->
+                <v-list v-else-if="recentDocuments.length > 0">
                   <v-list-item
                     v-for="document in recentDocuments"
                     :key="document.id"
@@ -90,8 +110,16 @@
                     </template>
 
                     <v-list-item-title>{{ document.name }}</v-list-item-title>
-                    <v-list-item-subtitle>
-                      {{ document.directory?.name }} • Version {{ document.version }}
+                    <v-list-item-subtitle class="d-flex align-center mt-1">
+                      <span class="text-medium-emphasis">{{ getFormattedPath(document) }}</span>
+                      <v-chip
+                        size="x-small"
+                        variant="outlined"
+                        color="primary"
+                        class="ml-2"
+                      >
+                        V {{ document.version }}
+                      </v-chip>
                     </v-list-item-subtitle>
 
                     <template v-slot:append>
@@ -105,6 +133,69 @@
                     </template>
                   </v-list-item>
                 </v-list>
+                
+                <!-- Empty state -->
+                <div v-else class="text-center py-8">
+                  <v-icon size="48" color="grey-lighten-1" class="mb-2">
+                    mdi-file-document-outline
+                  </v-icon>
+                  <div class="text-h6 text-medium-emphasis">No documents found</div>
+                  <div class="text-body-2 text-medium-emphasis mt-2">
+                    Upload your first document to get started
+                  </div>
+                </div>
+
+                <!-- Pagination -->
+                <div v-if="!documentsStore.loading && totalPages > 1" class="d-flex justify-center align-center mt-4">
+                  <v-btn
+                    icon="mdi-chevron-left"
+                    variant="text"
+                    size="small"
+                    :disabled="currentPage === 1"
+                    @click="prevPage"
+                  />
+                  
+                  <div class="mx-3">
+                    <v-btn
+                      v-for="page in Math.min(totalPages, 5)"
+                      :key="page"
+                      :variant="page === currentPage ? 'flat' : 'text'"
+                      :color="page === currentPage ? 'primary' : 'default'"
+                      size="small"
+                      class="mx-1"
+                      @click="goToPage(page)"
+                    >
+                      {{ page }}
+                    </v-btn>
+                    
+                    <span v-if="totalPages > 5" class="mx-2">...</span>
+                    
+                    <v-btn
+                      v-if="totalPages > 5 && currentPage < totalPages - 2"
+                      :variant="totalPages === currentPage ? 'flat' : 'text'"
+                      :color="totalPages === currentPage ? 'primary' : 'default'"
+                      size="small"
+                      @click="goToPage(totalPages)"
+                    >
+                      {{ totalPages }}
+                    </v-btn>
+                  </div>
+                  
+                  <v-btn
+                    icon="mdi-chevron-right"
+                    variant="text"
+                    size="small"
+                    :disabled="currentPage === totalPages"
+                    @click="nextPage"
+                  />
+                </div>
+                
+                <!-- Page info -->
+                <div v-if="!documentsStore.loading && totalPages > 1" class="text-center mt-2">
+                  <span class="text-caption text-medium-emphasis">
+                    Page {{ currentPage }} of {{ totalPages }}
+                  </span>
+                </div>
               </v-card-text>
             </v-card>
           </v-col>
@@ -125,18 +216,7 @@
                 </v-btn>
 
                 <v-btn
-                  color="secondary"
-                  variant="outlined"
-                  block
-                  class="mb-3"
-                  @click="showCreateDirectoryDialog = true"
-                >
-                  <v-icon left>mdi-folder-plus</v-icon>
-                  Create Directory
-                </v-btn>
-
-                <v-btn
-                  color="info"
+                  color="accent"
                   variant="outlined"
                   block
                   to="/documents"
@@ -148,35 +228,90 @@
             </v-card>
           </v-col>
         </v-row>
+
+        <!-- File Browser Section -->
+        <v-row class="mt-6">
+          <v-col cols="12">
+            <v-card>
+              <v-card-title class="d-flex align-center justify-space-between">
+                <span>File Browser</span>
+                <v-btn
+                  color="primary"
+                  size="small"
+                  to="/browse"
+                  variant="outlined"
+                >
+                  <v-icon left>mdi-open-in-new</v-icon>
+                  Open Full Browser
+                </v-btn>
+              </v-card-title>
+              <v-card-text class="pa-0">
+                <FileBrowser
+                  @upload="handleUpload"
+                  @edit="handleEdit"
+                  @delete="handleDelete"
+                  @download="handleDownload"
+                  @create-folder="handleCreateFolder"
+                />
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
       </v-col>
     </v-row>
 
-    <!-- Create Directory Dialog -->
-    <CreateDirectoryDialog
-      v-model="showCreateDirectoryDialog"
-      @created="handleDirectoryCreated"
-    />
   </v-container>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, inject } from 'vue'
+import { useRouter } from 'vue-router'
 import { useDirectoriesStore } from '@/stores/directories'
 import { useDocumentsStore } from '@/stores/documents'
-import CreateDirectoryDialog from '@/components/CreateDirectoryDialog.vue'
+import FileBrowser from '@/components/FileBrowser.vue'
 
+const router = useRouter()
 const directoriesStore = useDirectoriesStore()
 const documentsStore = useDocumentsStore()
 const showSnackbar = inject('showSnackbar')
 
-const showCreateDirectoryDialog = ref(false)
+// Pagination for recent documents
+const currentPage = ref(1)
+const itemsPerPage = 3
 
-const recentDocuments = computed(() => {
+const sortedDocuments = computed(() => {
   return documentsStore.documents
     .slice()
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-    .slice(0, 5)
 })
+
+const totalPages = computed(() => {
+  return Math.ceil(sortedDocuments.value.length / itemsPerPage)
+})
+
+const recentDocuments = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return sortedDocuments.value.slice(start, end)
+})
+
+const goToPage = (page) => {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page
+  }
+}
+
+const nextPage = () => {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value++
+  }
+}
+
+const prevPage = () => {
+  if (currentPage.value > 1) {
+    currentPage.value--
+  }
+}
 
 const processingCount = computed(() => {
   return documentsStore.documents.filter(doc => doc.status === 'UPDATING').length
@@ -206,8 +341,42 @@ const getDocumentIcon = (type) => {
   }
 }
 
-const handleDirectoryCreated = () => {
-  showSnackbar('Directory created successfully!', 'success')
+const getDocumentPath = (document) => {
+  return document.directory_path || 'Root'
+}
+
+const getFormattedPath = (document) => {
+  const path = getDocumentPath(document)
+  if (path === 'Root') {
+    return 'Root'
+  }
+  // Replace forward slashes with arrow icons
+  return path.replace(/\//g, ' ➤ ').replace(/^ ➤ /, '')
+}
+
+
+
+// FileBrowser event handlers
+const handleUpload = () => {
+  showSnackbar('Upload functionality - use the full browser for complete features', 'info')
+}
+
+const handleEdit = (item) => {
+  showSnackbar(`Edit ${item.name} - use the full browser for complete features`, 'info')
+}
+
+const handleDelete = (item) => {
+  showSnackbar(`Delete ${item.name} - use the full browser for complete features`, 'info')
+}
+
+const handleDownload = (item) => {
+  if (item.type === 'directory') return
+  showSnackbar(`Downloading ${item.name}...`, 'info')
+}
+
+const handleCreateFolder = () => {
+  // Redirect to full browser with create folder intent
+  router.push('/browse?action=create-folder')
 }
 
 onMounted(async () => {
