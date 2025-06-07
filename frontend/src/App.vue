@@ -4,7 +4,9 @@
       v-if="authStore.isAuthenticated"
       v-model="drawer"
       app
-      temporary
+      :temporary="$vuetify.display.mobile"
+      :permanent="!$vuetify.display.mobile"
+      width="280"
     >
       <DirectoryTree />
     </v-navigation-drawer>
@@ -17,7 +19,11 @@
     >
       <v-app-bar-nav-icon @click="drawer = !drawer" />
       
-      <v-toolbar-title class="text-h6" style="cursor: pointer" @click="router.push('/')">
+      <v-toolbar-title
+        class="text-h6"
+        style="cursor: pointer"
+        @click="router.push('/')"
+      >
         Console
       </v-toolbar-title>
 
@@ -33,7 +39,7 @@
       </v-btn>
 
       <v-menu>
-        <template v-slot:activator="{ props }">
+        <template #activator="{ props }">
           <v-btn
             icon
             v-bind="props"
@@ -52,7 +58,9 @@
           <v-divider />
           <v-list-item @click="logout">
             <v-list-item-title>
-              <v-icon left>mdi-logout</v-icon>
+              <v-icon left>
+                mdi-logout
+              </v-icon>
               Logout
             </v-list-item-title>
           </v-list-item>
@@ -65,7 +73,7 @@
     </v-main>
 
     <!-- Footer -->
-    <div class="footer-spacer"></div>
+    <div class="footer-spacer" />
     <v-footer
       v-if="authStore.isAuthenticated"
       :color="themeStore.isDark ? 'grey-darken-3' : 'grey-lighten-4'"
@@ -73,21 +81,43 @@
       elevation="3"
     >
       <v-container class="py-2">
-        <v-row align="center" justify="center" class="footer-main-row">
-          <v-col cols="12" md="4" class="text-left py-0">
+        <v-row
+          align="center"
+          justify="center"
+          class="footer-main-row"
+        >
+          <v-col
+            cols="12"
+            md="4"
+            class="text-left py-0"
+          >
             <div class="d-flex align-center">
-              <v-icon size="16" class="mr-2" :color="themeStore.isDark ? 'white' : 'primary'">mdi-console</v-icon>
+              <v-icon
+                size="16"
+                class="mr-2"
+                :color="themeStore.isDark ? 'white' : 'primary'"
+              >
+                mdi-console
+              </v-icon>
               <span class="font-weight-medium footer-text">Console RAG</span>
             </div>
           </v-col>
           
-          <v-col cols="12" md="4" class="text-center py-0">
+          <v-col
+            cols="12"
+            md="4"
+            class="text-center py-0"
+          >
             <div class="text-body-2 footer-text">
               &copy; {{ currentYear }} Mauritius Telecom
             </div>
           </v-col>
           
-          <v-col cols="12" md="4" class="text-right py-0">
+          <v-col
+            cols="12"
+            md="4"
+            class="text-right py-0"
+          >
             <div class="d-flex justify-end align-center">
               <v-btn
                 icon="mdi-help-circle-outline"
@@ -110,7 +140,10 @@
         
         <!-- Links Row -->
         <v-row class="footer-links-row">
-          <v-col cols="12" class="text-center py-0">
+          <v-col
+            cols="12"
+            class="text-center py-0"
+          >
             <v-btn
               variant="text"
               size="small"
@@ -154,7 +187,7 @@
       :timeout="snackbar.timeout"
     >
       {{ snackbar.message }}
-      <template v-slot:actions>
+      <template #actions>
         <v-btn
           color="white"
           variant="text"
@@ -180,7 +213,7 @@ const vuetifyTheme = useTheme()
 const authStore = useAuthStore()
 const themeStore = useThemeStore()
 
-const drawer = ref(false)
+const drawer = ref(true)
 const snackbar = ref({
   show: false,
   message: '',
@@ -208,7 +241,7 @@ const logout = async () => {
     await authStore.logout()
     router.push('/login')
     showSnackbar('Logged out successfully')
-  } catch (error) {
+  } catch (_error) {
     showSnackbar('Error during logout', 'error')
   }
 }

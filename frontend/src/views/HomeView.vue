@@ -7,64 +7,112 @@
         </h1>
         
         <v-row>
-          <v-col cols="12" md="6" lg="3">
+          <v-col
+            cols="12"
+            md="6"
+            lg="3"
+          >
             <v-card>
               <v-card-text>
                 <div class="d-flex align-center">
-                  <v-icon color="primary" size="40" class="mr-4">
+                  <v-icon
+                    color="primary"
+                    size="40"
+                    class="mr-4"
+                  >
                     mdi-folder-multiple
                   </v-icon>
                   <div>
-                    <div class="text-h6">{{ directoriesStore.directories.length }}</div>
-                    <div class="text-subtitle-2">Directories</div>
+                    <div class="text-h6">
+                      {{ directoriesStore.directories.length }}
+                    </div>
+                    <div class="text-subtitle-2">
+                      Directories
+                    </div>
                   </div>
                 </div>
               </v-card-text>
             </v-card>
           </v-col>
 
-          <v-col cols="12" md="6" lg="3">
+          <v-col
+            cols="12"
+            md="6"
+            lg="3"
+          >
             <v-card>
               <v-card-text>
                 <div class="d-flex align-center">
-                  <v-icon color="success" size="40" class="mr-4">
+                  <v-icon
+                    color="success"
+                    size="40"
+                    class="mr-4"
+                  >
                     mdi-file-document
                   </v-icon>
                   <div>
-                    <div class="text-h6">{{ documentsStore.documents.length }}</div>
-                    <div class="text-subtitle-2">Documents</div>
+                    <div class="text-h6">
+                      {{ documentsStore.documents.length }}
+                    </div>
+                    <div class="text-subtitle-2">
+                      Documents
+                    </div>
                   </div>
                 </div>
               </v-card-text>
             </v-card>
           </v-col>
 
-          <v-col cols="12" md="6" lg="3">
+          <v-col
+            cols="12"
+            md="6"
+            lg="3"
+          >
             <v-card>
               <v-card-text>
                 <div class="d-flex align-center">
-                  <v-icon color="warning" size="40" class="mr-4">
+                  <v-icon
+                    color="warning"
+                    size="40"
+                    class="mr-4"
+                  >
                     mdi-clock-outline
                   </v-icon>
                   <div>
-                    <div class="text-h6">{{ processingCount }}</div>
-                    <div class="text-subtitle-2">Processing</div>
+                    <div class="text-h6">
+                      {{ processingCount }}
+                    </div>
+                    <div class="text-subtitle-2">
+                      Processing
+                    </div>
                   </div>
                 </div>
               </v-card-text>
             </v-card>
           </v-col>
 
-          <v-col cols="12" md="6" lg="3">
+          <v-col
+            cols="12"
+            md="6"
+            lg="3"
+          >
             <v-card>
               <v-card-text>
                 <div class="d-flex align-center">
-                  <v-icon color="error" size="40" class="mr-4">
+                  <v-icon
+                    color="error"
+                    size="40"
+                    class="mr-4"
+                  >
                     mdi-alert-circle
                   </v-icon>
                   <div>
-                    <div class="text-h6">{{ failedCount }}</div>
-                    <div class="text-subtitle-2">Failed</div>
+                    <div class="text-h6">
+                      {{ failedCount }}
+                    </div>
+                    <div class="text-subtitle-2">
+                      Failed
+                    </div>
                   </div>
                 </div>
               </v-card-text>
@@ -73,165 +121,11 @@
         </v-row>
 
         <v-row class="mt-6">
-          <v-col cols="12" lg="8">
-            <v-card>
-              <v-card-title class="d-flex align-center justify-space-between">
-                <span>Recent Documents</span>
-                <div v-if="!documentsStore.loading" class="text-caption text-medium-emphasis">
-                  {{ recentDocuments.length }} of {{ sortedDocuments.length }} documents
-                </div>
-              </v-card-title>
-              <v-card-text>
-                <!-- Loading state -->
-                <div v-if="documentsStore.loading" class="text-center py-8">
-                  <v-progress-circular
-                    indeterminate
-                    color="primary"
-                    size="48"
-                    class="mb-4"
-                  />
-                  <div class="text-h6 text-medium-emphasis">Loading documents...</div>
-                  <div class="text-body-2 text-medium-emphasis mt-2">
-                    Please wait while we fetch your recent documents
-                  </div>
-                </div>
-                
-                <!-- Documents list -->
-                <v-list v-else-if="recentDocuments.length > 0">
-                  <v-list-item
-                    v-for="document in recentDocuments"
-                    :key="document.id"
-                    :to="`/documents?id=${document.id}`"
-                  >
-                    <template v-slot:prepend>
-                      <v-icon :color="getStatusColor(document.status)">
-                        {{ getDocumentIcon(document.type) }}
-                      </v-icon>
-                    </template>
-
-                    <v-list-item-title>{{ document.name }}</v-list-item-title>
-                    <v-list-item-subtitle class="d-flex align-center mt-1">
-                      <span class="text-medium-emphasis">{{ getFormattedPath(document) }}</span>
-                      <v-chip
-                        size="x-small"
-                        variant="outlined"
-                        color="primary"
-                        class="ml-2"
-                      >
-                        V {{ document.version }}
-                      </v-chip>
-                    </v-list-item-subtitle>
-
-                    <template v-slot:append>
-                      <v-chip
-                        :color="getStatusColor(document.status)"
-                        size="small"
-                        variant="outlined"
-                      >
-                        {{ document.status }}
-                      </v-chip>
-                    </template>
-                  </v-list-item>
-                </v-list>
-                
-                <!-- Empty state -->
-                <div v-else class="text-center py-8">
-                  <v-icon size="48" color="grey-lighten-1" class="mb-2">
-                    mdi-file-document-outline
-                  </v-icon>
-                  <div class="text-h6 text-medium-emphasis">No documents found</div>
-                  <div class="text-body-2 text-medium-emphasis mt-2">
-                    Upload your first document to get started
-                  </div>
-                </div>
-
-                <!-- Pagination -->
-                <div v-if="!documentsStore.loading && totalPages > 1" class="d-flex justify-center align-center mt-4">
-                  <v-btn
-                    icon="mdi-chevron-left"
-                    variant="text"
-                    size="small"
-                    :disabled="currentPage === 1"
-                    @click="prevPage"
-                  />
-                  
-                  <div class="mx-3">
-                    <v-btn
-                      v-for="page in Math.min(totalPages, 5)"
-                      :key="page"
-                      :variant="page === currentPage ? 'flat' : 'text'"
-                      :color="page === currentPage ? 'primary' : 'default'"
-                      size="small"
-                      class="mx-1"
-                      @click="goToPage(page)"
-                    >
-                      {{ page }}
-                    </v-btn>
-                    
-                    <span v-if="totalPages > 5" class="mx-2">...</span>
-                    
-                    <v-btn
-                      v-if="totalPages > 5 && currentPage < totalPages - 2"
-                      :variant="totalPages === currentPage ? 'flat' : 'text'"
-                      :color="totalPages === currentPage ? 'primary' : 'default'"
-                      size="small"
-                      @click="goToPage(totalPages)"
-                    >
-                      {{ totalPages }}
-                    </v-btn>
-                  </div>
-                  
-                  <v-btn
-                    icon="mdi-chevron-right"
-                    variant="text"
-                    size="small"
-                    :disabled="currentPage === totalPages"
-                    @click="nextPage"
-                  />
-                </div>
-                
-                <!-- Page info -->
-                <div v-if="!documentsStore.loading && totalPages > 1" class="text-center mt-2">
-                  <span class="text-caption text-medium-emphasis">
-                    Page {{ currentPage }} of {{ totalPages }}
-                  </span>
-                </div>
-              </v-card-text>
-            </v-card>
-          </v-col>
-
-          <v-col cols="12" lg="4">
-            <v-card>
-              <v-card-title>Quick Actions</v-card-title>
-              <v-card-text>
-                <v-btn
-                  color="primary"
-                  variant="outlined"
-                  block
-                  class="mb-3"
-                  to="/documents"
-                >
-                  <v-icon left>mdi-file-plus</v-icon>
-                  Upload Document
-                </v-btn>
-
-                <v-btn
-                  color="accent"
-                  variant="outlined"
-                  block
-                  to="/documents"
-                >
-                  <v-icon left>mdi-magnify</v-icon>
-                  Search Documents
-                </v-btn>
-              </v-card-text>
-            </v-card>
-          </v-col>
-        </v-row>
-
-        <!-- File Browser Section -->
-        <v-row class="mt-6">
-          <v-col cols="12">
+          <v-col
+            cols="12"
+            lg="8"
+          >
+            <!-- File Browser Section - Now Main Content -->
             <v-card>
               <v-card-title class="d-flex align-center justify-space-between">
                 <span>File Browser</span>
@@ -241,7 +135,9 @@
                   to="/browse"
                   variant="outlined"
                 >
-                  <v-icon left>mdi-open-in-new</v-icon>
+                  <v-icon left>
+                    mdi-open-in-new
+                  </v-icon>
                   Open Full Browser
                 </v-btn>
               </v-card-title>
@@ -256,10 +152,158 @@
               </v-card-text>
             </v-card>
           </v-col>
+
+          <v-col
+            cols="12"
+            lg="4"
+          >
+            <!-- Recent Documents - Now in Sidebar -->
+            <v-card class="mb-4">
+              <v-card-title class="d-flex align-center justify-space-between">
+                <span>Recent Documents</span>
+                <div
+                  v-if="!documentsStore.loading"
+                  class="text-caption text-medium-emphasis"
+                >
+                  {{ recentDocuments.length }} of {{ sortedDocuments.length }}
+                </div>
+              </v-card-title>
+              <v-card-text>
+                <!-- Loading state -->
+                <div
+                  v-if="documentsStore.loading"
+                  class="text-center py-4"
+                >
+                  <v-progress-circular
+                    indeterminate
+                    color="primary"
+                    size="32"
+                    class="mb-2"
+                  />
+                  <div class="text-body-2 text-medium-emphasis">
+                    Loading...
+                  </div>
+                </div>
+                
+                <!-- Documents list -->
+                <v-list v-else-if="recentDocuments.length > 0" density="compact">
+                  <v-list-item
+                    v-for="document in recentDocuments"
+                    :key="document.id"
+                    :to="`/documents?id=${document.id}`"
+                    class="px-0"
+                  >
+                    <template #prepend>
+                      <v-icon 
+                        :color="getStatusColor(document.status)"
+                        size="small"
+                      >
+                        {{ getDocumentIcon(document.type) }}
+                      </v-icon>
+                    </template>
+
+                    <v-list-item-title class="text-body-2">{{ document.name }}</v-list-item-title>
+                    <v-list-item-subtitle class="text-caption">
+                      {{ getFormattedPath(document) }}
+                      <v-chip
+                        size="x-small"
+                        variant="outlined"
+                        color="primary"
+                        class="ml-1"
+                      >
+                        V{{ document.version }}
+                      </v-chip>
+                    </v-list-item-subtitle>
+
+                    <template #append>
+                      <v-chip
+                        :color="getStatusColor(document.status)"
+                        size="x-small"
+                        variant="dot"
+                      />
+                    </template>
+                  </v-list-item>
+                </v-list>
+                
+                <!-- Empty state -->
+                <div
+                  v-else
+                  class="text-center py-4"
+                >
+                  <v-icon
+                    size="32"
+                    color="grey-lighten-1"
+                    class="mb-1"
+                  >
+                    mdi-file-document-outline
+                  </v-icon>
+                  <div class="text-body-2 text-medium-emphasis">
+                    No documents
+                  </div>
+                </div>
+
+                <!-- Pagination for sidebar -->
+                <div
+                  v-if="!documentsStore.loading && totalPages > 1"
+                  class="d-flex justify-center align-center mt-2"
+                >
+                  <v-btn
+                    icon="mdi-chevron-left"
+                    variant="text"
+                    size="x-small"
+                    :disabled="currentPage === 1"
+                    @click="prevPage"
+                  />
+                  
+                  <span class="text-caption mx-2">
+                    {{ currentPage }}/{{ totalPages }}
+                  </span>
+                  
+                  <v-btn
+                    icon="mdi-chevron-right"
+                    variant="text"
+                    size="x-small"
+                    :disabled="currentPage === totalPages"
+                    @click="nextPage"
+                  />
+                </div>
+              </v-card-text>
+            </v-card>
+
+            <!-- Quick Actions -->
+            <v-card>
+              <v-card-title>Quick Actions</v-card-title>
+              <v-card-text>
+                <v-btn
+                  color="primary"
+                  variant="outlined"
+                  block
+                  class="mb-3"
+                  to="/documents"
+                >
+                  <v-icon left>
+                    mdi-file-plus
+                  </v-icon>
+                  Upload Document
+                </v-btn>
+
+                <v-btn
+                  color="accent"
+                  variant="outlined"
+                  block
+                  to="/documents"
+                >
+                  <v-icon left>
+                    mdi-magnify
+                  </v-icon>
+                  Search Documents
+                </v-btn>
+              </v-card-text>
+            </v-card>
+          </v-col>
         </v-row>
       </v-col>
     </v-row>
-
   </v-container>
 </template>
 
@@ -385,7 +429,7 @@ onMounted(async () => {
       directoriesStore.fetchDirectories(),
       documentsStore.fetchDocuments()
     ])
-  } catch (error) {
+  } catch (_error) {
     showSnackbar('Failed to load data', 'error')
   }
 })
