@@ -17,7 +17,7 @@
     >
       <v-app-bar-nav-icon @click="drawer = !drawer" />
       
-      <v-toolbar-title class="text-h6">
+      <v-toolbar-title class="text-h6" style="cursor: pointer" @click="router.push('/')">
         Console
       </v-toolbar-title>
 
@@ -84,7 +84,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, provide } from 'vue'
+import { ref, onMounted, provide, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTheme } from 'vuetify'
 import { useAuthStore } from '@/stores/auth'
@@ -126,7 +126,8 @@ const logout = async () => {
 }
 
 onMounted(async () => {
-  themeStore.initializeTheme(vuetifyTheme)
+  themeStore.initializeTheme()
+  vuetifyTheme.global.name.value = themeStore.isDark ? 'dark' : 'light'
   
   if (authStore.isAuthenticated) {
     try {
@@ -135,5 +136,9 @@ onMounted(async () => {
       console.error('Failed to fetch user:', error)
     }
   }
+})
+
+watch(() => themeStore.isDark, (newIsDarkValue) => {
+  vuetifyTheme.global.name.value = newIsDarkValue ? 'dark' : 'light'
 })
 </script>
