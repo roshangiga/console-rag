@@ -1,5 +1,8 @@
 <template>
   <v-app>
+    <!-- Splash Screen -->
+    <SplashScreen v-model="showSplash" />
+    
     <v-navigation-drawer
       v-if="authStore.isAuthenticated"
       v-model="drawer"
@@ -7,6 +10,7 @@
       :temporary="$vuetify.display.mobile"
       :permanent="!$vuetify.display.mobile"
       width="280"
+      class="elegant-drawer"
     >
       <DirectoryTree />
     </v-navigation-drawer>
@@ -14,8 +18,8 @@
     <v-app-bar
       v-if="authStore.isAuthenticated"
       app
-      color="primary"
-      dark
+      class="elegant-app-bar"
+      elevation="0"
     >
       <v-app-bar-nav-icon @click="drawer = !drawer" />
       
@@ -207,6 +211,7 @@ import { useTheme } from 'vuetify'
 import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'
 import DirectoryTree from '@/components/DirectoryTree.vue'
+import SplashScreen from '@/components/SplashScreen.vue'
 
 const router = useRouter()
 const vuetifyTheme = useTheme()
@@ -214,6 +219,7 @@ const authStore = useAuthStore()
 const themeStore = useThemeStore()
 
 const drawer = ref(true)
+const showSplash = ref(false)
 const snackbar = ref({
   show: false,
   message: '',
@@ -263,16 +269,35 @@ const showTerms = () => {
   showSnackbar('Terms of Service coming soon', 'info')
 }
 
+// Show splash screen on initial load
+const showSplashScreen = () => {
+  showSplash.value = true
+  setTimeout(() => {
+    showSplash.value = false
+  }, 2500)
+}
+
 onMounted(async () => {
   themeStore.initializeTheme()
   vuetifyTheme.global.name.value = themeStore.isDark ? 'dark' : 'light'
   
   if (authStore.isAuthenticated) {
+    // Show splash screen on refresh
+    showSplashScreen()
+    
     try {
       await authStore.fetchUser()
     } catch (error) {
       console.error('Failed to fetch user:', error)
     }
+  }
+})
+
+// Watch for login state changes to show splash after login
+watch(() => authStore.isAuthenticated, (newValue, oldValue) => {
+  if (newValue && !oldValue) {
+    // User just logged in
+    showSplashScreen()
   }
 })
 
@@ -282,14 +307,120 @@ watch(() => themeStore.isDark, (newIsDarkValue) => {
 </script>
 
 <style scoped>
+/* Elegant navigation drawer */
+.elegant-drawer {
+  border-right: 1px solid rgba(0, 0, 0, 0.05) !important;
+  background: rgba(255, 255, 255, 0.98) !important;
+}
+
+.v-theme--dark .elegant-drawer {
+  border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+  background: rgba(18, 18, 18, 0.98) !important;
+}
+
+/* Elegant app bar */
+.elegant-app-bar {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.v-theme--dark .elegant-app-bar {
+  background: rgba(18, 18, 18, 0.95) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* App bar icons and buttons */
+.elegant-app-bar .v-btn {
+  transition: all 0.2s ease;
+}
+
+.elegant-app-bar .v-btn:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.v-theme--dark .elegant-app-bar .v-btn:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+/* Toolbar title styling */
+.v-toolbar-title {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  transition: opacity 0.2s ease;
+}
+
+.v-toolbar-title:hover {
+  opacity: 0.8;
+}
+
+/* Avatar menu improvements */
+.v-avatar {
+  transition: transform 0.2s ease;
+}
+
+.v-btn:hover .v-avatar {
+  transform: scale(1.05);
+}
+
+/* Menu list styling */
+.v-list {
+  padding: 8px !important;
+}
+
+.v-list-item {
+  border-radius: 8px;
+  margin-bottom: 2px;
+  transition: all 0.2s ease;
+}
+
+.v-list-item:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.v-theme--dark .v-list-item:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+/* Main content area */
+.v-main {
+  background-color: rgba(249, 250, 251, 1);
+}
+
+.v-theme--dark .v-main {
+  background-color: rgba(10, 10, 10, 1);
+}
+
+/* Snackbar styling */
+.v-snackbar__wrapper {
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1) !important;
+}
+
+.v-theme--dark .v-snackbar__wrapper {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Footer spacer styling moved from below */
 .footer-spacer {
   height: 48px;
   width: 100%;
 }
 
+/* Footer styles */
 .footer-custom {
   margin-top: auto;
   min-height: auto !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px);
+}
+
+.v-theme--dark .footer-custom {
+  background: rgba(18, 18, 18, 0.95) !important;
 }
 
 .footer-main-row {
