@@ -31,12 +31,24 @@ A comprehensive RAG (Retrieval-Augmented Generation) document management system 
 3. **Start the application**
    ```bash
    # Linux/Mac
-   chmod +x start.sh
+   chmod +x start.sh restart.sh stop.sh
    ./start.sh
    
    # Windows
    start.bat
    ```
+
+## 🎮 Control Scripts
+
+### Linux/Mac
+- **Start**: `./start.sh` - Start all services
+- **Stop**: `./stop.sh` - Gracefully stop all services  
+- **Restart**: `./restart.sh` - Stop and restart all services
+
+### Windows
+- **Start**: `start.bat` - Start all services
+- **Stop**: `stop.bat` - Gracefully stop all services
+- **Restart**: `restart.bat` - Stop and restart all services
 
 ## 🌐 Access Points
 
