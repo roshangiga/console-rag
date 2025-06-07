@@ -271,6 +271,17 @@
                         Download
                       </v-list-item-title>
                     </v-list-item>
+                    <v-list-item
+                      v-if="item.type !== 'directory'"
+                      @click="moveItem(item)"
+                    >
+                      <v-list-item-title>
+                        <v-icon left>
+                          mdi-folder-move
+                        </v-icon>
+                        Move To
+                      </v-list-item-title>
+                    </v-list-item>
                     <v-list-item @click="editItem(item)">
                       <v-list-item-title>
                         <v-icon left>
@@ -320,7 +331,9 @@
                                   {{ getItemIcon(item) }}
                                 </v-icon>
                                 <div>
-                                  <h3 class="text-h6 mb-1">{{ item.name }}</h3>
+                                  <h3 class="text-h6 mb-1">
+                                    {{ item.name }}
+                                  </h3>
                                   <div class="d-flex align-center gap-2">
                                     <v-chip
                                       :color="getTypeColor(item.type)"
@@ -351,7 +364,10 @@
                               
                               <!-- Quick actions -->
                               <div class="d-flex align-center gap-2">
-                                <v-tooltip text="Quick Preview" location="top">
+                                <v-tooltip
+                                  text="Quick Preview"
+                                  location="top"
+                                >
                                   <template #activator="{ props: tooltipProps }">
                                     <v-btn
                                       v-bind="tooltipProps"
@@ -380,7 +396,10 @@
                                   </template>
                                 </v-tooltip>
                                 
-                                <v-tooltip text="Edit" location="top">
+                                <v-tooltip
+                                  text="Edit"
+                                  location="top"
+                                >
                                   <template #activator="{ props: tooltipProps }">
                                     <v-btn
                                       v-bind="tooltipProps"
@@ -393,7 +412,10 @@
                                   </template>
                                 </v-tooltip>
                                 
-                                <v-tooltip text="Share" location="top">
+                                <v-tooltip
+                                  text="Share"
+                                  location="top"
+                                >
                                   <template #activator="{ props: tooltipProps }">
                                     <v-btn
                                       v-bind="tooltipProps"
@@ -415,12 +437,23 @@
                           <v-card-text class="expanded-body">
                             <v-row class="align-start">
                               <!-- Left column - Metadata -->
-                              <v-col cols="12" md="8">
+                              <v-col
+                                cols="12"
+                                md="8"
+                              >
                                 <div class="metadata-grid">
                                   <!-- File/Directory specific info -->
-                                  <div v-if="item.type === 'directory'" class="info-section">
+                                  <div
+                                    v-if="item.type === 'directory'"
+                                    class="info-section"
+                                  >
                                     <h4 class="text-subtitle-1 mb-2 text-medium-emphasis">
-                                      <v-icon size="18" class="mr-1">mdi-folder-information</v-icon>
+                                      <v-icon
+                                        size="18"
+                                        class="mr-1"
+                                      >
+                                        mdi-folder-information
+                                      </v-icon>
                                       Directory Information
                                     </h4>
                                     <div class="info-grid">
@@ -439,9 +472,17 @@
                                     </div>
                                   </div>
                                   
-                                  <div v-else class="info-section">
+                                  <div
+                                    v-else
+                                    class="info-section"
+                                  >
                                     <h4 class="text-subtitle-1 mb-2 text-medium-emphasis">
-                                      <v-icon size="18" class="mr-1">mdi-file-document</v-icon>
+                                      <v-icon
+                                        size="18"
+                                        class="mr-1"
+                                      >
+                                        mdi-file-document
+                                      </v-icon>
                                       Document Information
                                     </h4>
                                     <div class="info-grid">
@@ -449,11 +490,17 @@
                                         <span class="info-label">File Size:</span>
                                         <span class="info-value">{{ formatFileSize(item.file_size) }}</span>
                                       </div>
-                                      <div v-if="item.purpose" class="info-item">
+                                      <div
+                                        v-if="item.purpose"
+                                        class="info-item"
+                                      >
                                         <span class="info-label">Purpose:</span>
                                         <span class="info-value">{{ item.purpose }}</span>
                                       </div>
-                                      <div v-if="getFileName(item)" class="info-item">
+                                      <div
+                                        v-if="getFileName(item)"
+                                        class="info-item"
+                                      >
                                         <span class="info-label">Filename:</span>
                                         <span class="info-value">{{ getFileName(item) }}</span>
                                       </div>
@@ -463,7 +510,12 @@
                                   <!-- Timestamps -->
                                   <div class="info-section">
                                     <h4 class="text-subtitle-1 mb-2 text-medium-emphasis">
-                                      <v-icon size="18" class="mr-1">mdi-clock</v-icon>
+                                      <v-icon
+                                        size="18"
+                                        class="mr-1"
+                                      >
+                                        mdi-clock
+                                      </v-icon>
                                       Timeline
                                     </h4>
                                     <div class="info-grid">
@@ -478,7 +530,10 @@
                                       <div class="info-item">
                                         <span class="info-label">Owner:</span>
                                         <span class="info-value d-flex align-center">
-                                          <v-avatar size="20" class="mr-2">
+                                          <v-avatar
+                                            size="20"
+                                            class="mr-2"
+                                          >
                                             <v-icon size="12">mdi-account</v-icon>
                                           </v-avatar>
                                           {{ item.creator?.name || 'Unknown' }}
@@ -488,9 +543,17 @@
                                   </div>
                                   
                                   <!-- Path and Location -->
-                                  <div v-if="item.file_path" class="info-section">
+                                  <div
+                                    v-if="item.file_path"
+                                    class="info-section"
+                                  >
                                     <h4 class="text-subtitle-1 mb-2 text-medium-emphasis">
-                                      <v-icon size="18" class="mr-1">mdi-map-marker-path</v-icon>
+                                      <v-icon
+                                        size="18"
+                                        class="mr-1"
+                                      >
+                                        mdi-map-marker-path
+                                      </v-icon>
                                       Location
                                     </h4>
                                     <div class="path-display">
@@ -507,11 +570,22 @@
                               </v-col>
                               
                               <!-- Right column - Tags and Actions -->
-                              <v-col cols="12" md="4">
+                              <v-col
+                                cols="12"
+                                md="4"
+                              >
                                 <!-- Tags section -->
-                                <div v-if="item.tags && item.tags.length" class="info-section">
+                                <div
+                                  v-if="item.tags && item.tags.length"
+                                  class="info-section"
+                                >
                                   <h4 class="text-subtitle-1 mb-2 text-medium-emphasis">
-                                    <v-icon size="18" class="mr-1">mdi-tag-multiple</v-icon>
+                                    <v-icon
+                                      size="18"
+                                      class="mr-1"
+                                    >
+                                      mdi-tag-multiple
+                                    </v-icon>
                                     Tags
                                   </h4>
                                   <div class="tags-container">
@@ -523,7 +597,12 @@
                                       variant="outlined"
                                       color="primary"
                                     >
-                                      <v-icon size="14" class="mr-1">mdi-tag</v-icon>
+                                      <v-icon
+                                        size="14"
+                                        class="mr-1"
+                                      >
+                                        mdi-tag
+                                      </v-icon>
                                       {{ tag.tag_name }}
                                     </v-chip>
                                   </div>
@@ -532,7 +611,12 @@
                                 <!-- Action buttons -->
                                 <div class="info-section">
                                   <h4 class="text-subtitle-1 mb-2 text-medium-emphasis">
-                                    <v-icon size="18" class="mr-1">mdi-cog</v-icon>
+                                    <v-icon
+                                      size="18"
+                                      class="mr-1"
+                                    >
+                                      mdi-cog
+                                    </v-icon>
                                     Actions
                                   </h4>
                                   <div class="action-buttons">
@@ -544,7 +628,12 @@
                                       class="mb-2 w-100"
                                       @click="previewPdf(item)"
                                     >
-                                      <v-icon size="16" class="mr-2">mdi-eye</v-icon>
+                                      <v-icon
+                                        size="16"
+                                        class="mr-2"
+                                      >
+                                        mdi-eye
+                                      </v-icon>
                                       Preview PDF
                                     </v-btn>
                                     
@@ -556,8 +645,30 @@
                                       class="mb-2 w-100"
                                       @click="downloadDocument(item)"
                                     >
-                                      <v-icon size="16" class="mr-2">mdi-download</v-icon>
+                                      <v-icon
+                                        size="16"
+                                        class="mr-2"
+                                      >
+                                        mdi-download
+                                      </v-icon>
                                       Download
+                                    </v-btn>
+                                    
+                                    <v-btn
+                                      v-if="item.type !== 'directory'"
+                                      variant="outlined"
+                                      color="warning"
+                                      size="small"
+                                      class="mb-2 w-100"
+                                      @click="moveItem(item)"
+                                    >
+                                      <v-icon
+                                        size="16"
+                                        class="mr-2"
+                                      >
+                                        mdi-folder-move
+                                      </v-icon>
+                                      Move To Directory
                                     </v-btn>
                                     
                                     <v-btn
@@ -567,7 +678,12 @@
                                       class="mb-2 w-100"
                                       @click="editItem(item)"
                                     >
-                                      <v-icon size="16" class="mr-2">mdi-pencil</v-icon>
+                                      <v-icon
+                                        size="16"
+                                        class="mr-2"
+                                      >
+                                        mdi-pencil
+                                      </v-icon>
                                       Edit Properties
                                     </v-btn>
                                     
@@ -578,7 +694,12 @@
                                       class="mb-2 w-100"
                                       @click="shareItem(item)"
                                     >
-                                      <v-icon size="16" class="mr-2">mdi-share-variant</v-icon>
+                                      <v-icon
+                                        size="16"
+                                        class="mr-2"
+                                      >
+                                        mdi-share-variant
+                                      </v-icon>
                                       Share
                                     </v-btn>
                                     
@@ -589,7 +710,12 @@
                                       class="w-100"
                                       @click="deleteItem(item)"
                                     >
-                                      <v-icon size="16" class="mr-2">mdi-delete</v-icon>
+                                      <v-icon
+                                        size="16"
+                                        class="mr-2"
+                                      >
+                                        mdi-delete
+                                      </v-icon>
                                       Delete
                                     </v-btn>
                                   </div>
@@ -652,14 +778,82 @@
       </v-col>
     </v-row>
 
+    <!-- Move Document Dialog -->
+    <v-dialog
+      v-model="showMoveDialog"
+      max-width="500"
+    >
+      <v-card>
+        <v-card-title class="d-flex align-center justify-space-between">
+          <span>Move Document</span>
+          <v-btn
+            icon="mdi-close"
+            variant="text"
+            @click="showMoveDialog = false"
+          />
+        </v-card-title>
+        <v-card-text>
+          <div
+            v-if="movingItem"
+            class="mb-4"
+          >
+            <div class="d-flex align-center mb-3">
+              <v-icon
+                :color="getTypeColor(movingItem)"
+                class="mr-3"
+                size="24"
+              >
+                {{ getItemIcon(movingItem) }}
+              </v-icon>
+              <div>
+                <div class="font-weight-medium">
+                  {{ movingItem.name }}
+                </div>
+                <div class="text-caption text-medium-emphasis">
+                  {{ getFileName(movingItem) }}
+                </div>
+              </div>
+            </div>
+            
+            <v-divider class="mb-4" />
+            
+            <DirectoryTreeSelector
+              v-model="moveForm.directory_id"
+              label="Select Destination Directory"
+              density="compact"
+              class="directory-selector-field"
+            />
+          </div>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            variant="text"
+            @click="showMoveDialog = false"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            color="primary"
+            :loading="moving"
+            :disabled="!moveForm.directory_id && moveForm.directory_id !== 0"
+            @click="confirmMove"
+          >
+            Move Here
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <!-- PDF Viewer removed - using browser's native viewer -->
   </v-container>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import { apiService } from '@/services/api'
+import DirectoryTreeSelector from '@/components/DirectoryTreeSelector.vue'
 
 const props = defineProps({
   initialDirectoryId: {
@@ -671,12 +865,21 @@ const props = defineProps({
 const emit = defineEmits(['upload', 'edit', 'delete', 'download', 'createFolder'])
 
 const router = useRouter()
+const showSnackbar = inject('showSnackbar')
 const loading = ref(false)
 const viewMode = ref('list')
 const expanded = ref([])
 const selectedItemId = ref(null)
 const hoveredItemId = ref(null)
 const keyboardSelectedIndex = ref(0)
+
+// Move functionality
+const showMoveDialog = ref(false)
+const movingItem = ref(null)
+const moving = ref(false)
+const moveForm = ref({
+  directory_id: null
+})
 
 // Remove PDF viewer state - using browser's native viewer now
 
@@ -1008,6 +1211,41 @@ const shareItem = (item) => {
   // emit('share', item)
 }
 
+const moveItem = (item) => {
+  movingItem.value = item
+  moveForm.value.directory_id = null
+  showMoveDialog.value = true
+}
+
+const confirmMove = async () => {
+  if (!movingItem.value) return
+  
+  moving.value = true
+  try {
+    // API call to move the document
+    await apiService.updateDocument(movingItem.value.originalId, {
+      directory_id: moveForm.value.directory_id === 0 ? null : moveForm.value.directory_id,
+      name: movingItem.value.name,
+      type: movingItem.value.type,
+      purpose: movingItem.value.purpose || '',
+      version: movingItem.value.version || '1.0'
+    })
+    
+    showSnackbar(`Moved "${movingItem.value.name}" successfully`, 'success')
+    showMoveDialog.value = false
+    
+    // Refresh the current directory to reflect the change
+    const currentDir = router.currentRoute.value.query.dir || 0
+    await fetchDirectoryContents(currentDir)
+    
+  } catch (error) {
+    console.error('Failed to move document:', error)
+    showSnackbar('Failed to move document', 'error')
+  } finally {
+    moving.value = false
+  }
+}
+
 // Keyboard navigation
 const handleKeydown = (event) => {
   if (viewMode.value !== 'list' || allItems.value.length === 0) return
@@ -1087,6 +1325,16 @@ watch(() => router.currentRoute.value.query.dir, (newDir) => {
   if (newDir !== undefined) {
     fetchDirectoryContents(newDir || 0)
   }
+})
+
+// Expose methods to parent components
+const refreshCurrentDirectory = async () => {
+  const currentDir = router.currentRoute.value.query.dir || 0
+  await fetchDirectoryContents(currentDir)
+}
+
+defineExpose({
+  refreshCurrentDirectory
 })
 </script>
 

@@ -22,7 +22,6 @@ $cfg['Servers'][$i]['extension'] = 'mysqli';
 $cfg['Servers'][$i]['user'] = 'root';
 $cfg['Servers'][$i]['password'] = '';
 $cfg['Servers'][$i]['AllowNoPassword'] = true;
-
 /**
  * Other configuration
  */
