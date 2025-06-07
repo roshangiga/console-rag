@@ -112,9 +112,18 @@ if ! php artisan migrate --force; then
     echo "   Please ensure MySQL is running and the database 'console_rag' exists."
     exit 1
 fi
-if ! php artisan db:seed --force; then
-    echo "❌ Database seeding failed."
-    exit 1
+
+# Check if database is already seeded
+USER_COUNT=$(mysql -u root console_rag -se "SELECT COUNT(*) FROM users;" 2>/dev/null || echo "0")
+if [ "$USER_COUNT" -eq "0" ]; then
+    echo "Seeding database with initial data..."
+    if ! php artisan db:seed --force; then
+        echo "❌ Database seeding failed."
+        exit 1
+    fi
+    echo "✅ Database seeded successfully."
+else
+    echo "✅ Database already contains data (${USER_COUNT} users found)."
 fi
 
 echo "✅ Backend setup complete."
@@ -146,6 +155,7 @@ echo ""
 # Port checks before starting servers
 PORT_CHECK 8000
 PORT_CHECK 3000
+PORT_CHECK 8080
 
 # Start Laravel backend in background
 cd ../backend

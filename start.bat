@@ -91,11 +91,22 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-php artisan db:seed --force
-if %errorlevel% neq 0 (
-    echo ❌ Database seeding failed.
-    pause
-    exit /b 1
+REM Check if database is already seeded
+mysql -u root console_rag -se "SELECT COUNT(*) FROM users;" > user_count.tmp 2>nul
+set /p USER_COUNT=<user_count.tmp
+del user_count.tmp 2>nul
+
+if "%USER_COUNT%"=="0" (
+    echo Seeding database with initial data...
+    php artisan db:seed --force
+    if %errorlevel% neq 0 (
+        echo ❌ Database seeding failed.
+        pause
+        exit /b 1
+    )
+    echo ✅ Database seeded successfully.
+) else (
+    echo ✅ Database already contains data ^(%USER_COUNT% users found^).
 )
 
 echo ✅ Backend setup complete.
