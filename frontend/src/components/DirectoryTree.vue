@@ -14,7 +14,7 @@
         prepend-icon="mdi-folder-open"
         title="File Browser"
         to="/browse"
-        class="text-primary compact-item"
+        :class="['text-primary', 'compact-item', { 'selected-browse': $route.path === '/browse' }]"
       />
       
       <v-divider class="my-1" />
@@ -34,7 +34,8 @@
           v-for="directory in directoriesStore.directories"
           :key="directory.id"
           :directory="directory"
-          @select="$emit('select', $event)"
+          :selected-id="selectedDirectoryId"
+          @select="handleSelect"
         />
       </template>
     </v-list>
@@ -42,13 +43,22 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import { useDirectoriesStore } from '@/stores/directories'
 import DirectoryTreeItem from './DirectoryTreeItem.vue'
 
-const directoriesStore = useDirectoriesStore()
+const $route = useRoute()
 
-const _emit = defineEmits(['select'])
+const directoriesStore = useDirectoriesStore()
+const selectedDirectoryId = ref(null)
+
+const emit = defineEmits(['select'])
+
+const handleSelect = (directory) => {
+  selectedDirectoryId.value = directory.id
+  emit('select', directory)
+}
 
 onMounted(async () => {
   if (directoriesStore.directories.length === 0) {
@@ -111,5 +121,25 @@ onMounted(async () => {
 
 .compact-item {
   margin-bottom: 4px;
+}
+
+/* Highlight selected browse route */
+.selected-browse {
+  background-color: rgba(25, 118, 210, 0.12) !important;
+  border-left: 3px solid rgb(25, 118, 210) !important;
+}
+
+.v-theme--dark .selected-browse {
+  background-color: rgba(144, 202, 249, 0.16) !important;
+  border-left: 3px solid rgb(144, 202, 249) !important;
+}
+
+.selected-browse :deep(.v-list-item-title) {
+  color: rgb(25, 118, 210) !important;
+  font-weight: 500 !important;
+}
+
+.v-theme--dark .selected-browse :deep(.v-list-item-title) {
+  color: rgb(144, 202, 249) !important;
 }
 </style>

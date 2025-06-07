@@ -277,9 +277,42 @@ const showSplashScreen = () => {
   }, 2500)
 }
 
+// Keyboard shortcuts
+const setupKeyboardShortcuts = () => {
+  window.addEventListener('keydown', (e) => {
+    if (!authStore.isAuthenticated) return
+    
+    // Ctrl/Cmd + K for search
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      e.preventDefault()
+      router.push('/documents')
+    }
+    
+    // Ctrl/Cmd + U for upload
+    if ((e.ctrlKey || e.metaKey) && e.key === 'u') {
+      e.preventDefault()
+      router.push('/documents?action=upload')
+    }
+    
+    // Ctrl/Cmd + B for file browser
+    if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+      e.preventDefault()
+      router.push('/browse')
+    }
+    
+    // Ctrl/Cmd + Shift + D for toggle dark mode
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'D') {
+      e.preventDefault()
+      themeStore.toggleTheme()
+    }
+  })
+}
+
 onMounted(async () => {
   themeStore.initializeTheme()
   vuetifyTheme.global.name.value = themeStore.isDark ? 'dark' : 'light'
+  
+  setupKeyboardShortcuts()
   
   if (authStore.isAuthenticated) {
     // Show splash screen on refresh

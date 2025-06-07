@@ -2,7 +2,14 @@
   <v-container fluid>
     <v-row>
       <v-col cols="12">
-        <v-row>
+        <!-- Loading State for Stats -->
+        <SkeletonLoader
+          v-if="directoriesStore.loading || documentsStore.loading"
+          type="stats"
+        />
+        
+        <!-- Actual Stats -->
+        <v-row v-else>
           <v-col
             cols="12"
             md="6"
@@ -186,22 +193,13 @@
                   {{ recentDocuments.length }} of {{ sortedDocuments.length }}
                 </div>
               </v-card-title>
-              <v-card-text>
+              <v-card-text class="pt-0">
                 <!-- Loading state -->
-                <div
+                <SkeletonLoader
                   v-if="documentsStore.loading"
-                  class="text-center py-4"
-                >
-                  <v-progress-circular
-                    indeterminate
-                    color="primary"
-                    size="32"
-                    class="mb-2"
-                  />
-                  <div class="text-body-2 text-medium-emphasis">
-                    Loading...
-                  </div>
-                </div>
+                  type="list"
+                  :count="3"
+                />
                 
                 <!-- Documents list -->
                 <v-list
@@ -249,21 +247,17 @@
                 </v-list>
                 
                 <!-- Empty state -->
-                <div
+                <EmptyState
                   v-else
-                  class="text-center py-4"
-                >
-                  <v-icon
-                    size="32"
-                    color="grey-lighten-1"
-                    class="mb-1"
-                  >
-                    mdi-file-document-outline
-                  </v-icon>
-                  <div class="text-body-2 text-medium-emphasis">
-                    No documents
-                  </div>
-                </div>
+                  icon="mdi-file-document-outline"
+                  title="No documents yet"
+                  description="Upload your first document to get started"
+                  action-text="Upload Document"
+                  action-icon="mdi-upload"
+                  action-variant="tonal"
+                  action-size="small"
+                  @action="router.push('/documents')"
+                />
 
                 <!-- Pagination for sidebar -->
                 <div
@@ -342,6 +336,8 @@ import { useRouter } from 'vue-router'
 import { useDirectoriesStore } from '@/stores/directories'
 import { useDocumentsStore } from '@/stores/documents'
 import FileBrowser from '@/components/FileBrowser.vue'
+import SkeletonLoader from '@/components/SkeletonLoader.vue'
+import EmptyState from '@/components/EmptyState.vue'
 
 const router = useRouter()
 const directoriesStore = useDirectoriesStore()
@@ -471,6 +467,20 @@ onMounted(async () => {
   border: 1px solid rgba(0, 0, 0, 0.05);
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   background: rgba(255, 255, 255, 0.95);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.5s ease;
 }
 
 .v-theme--dark .stat-card {
@@ -478,13 +488,23 @@ onMounted(async () => {
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+.v-theme--dark .stat-card::before {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+}
+
 .stat-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 20px -10px rgba(0, 0, 0, 0.15);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.stat-card:hover::before {
+  left: 100%;
 }
 
 .v-theme--dark .stat-card:hover {
   box-shadow: 0 12px 20px -10px rgba(0, 0, 0, 0.5);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Icon wrappers for stats */

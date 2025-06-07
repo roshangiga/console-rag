@@ -2,7 +2,7 @@
   <div>
     <v-list-item
       :prepend-icon="hasChildren ? (expanded ? 'mdi-folder-open' : 'mdi-folder') : 'mdi-folder'"
-      class="directory-item compact-tree-item"
+      :class="['directory-item', 'compact-tree-item', { 'selected-item': isSelected }]"
       density="compact"
       @click="toggleExpanded"
     >
@@ -29,6 +29,7 @@
           v-for="child in directory.children"
           :key="child.id"
           :directory="child"
+          :selected-id="selectedId"
           @select="$emit('select', $event)"
         />
       </div>
@@ -43,6 +44,10 @@ const props = defineProps({
   directory: {
     type: Object,
     required: true
+  },
+  selectedId: {
+    type: [Number, String],
+    default: null
   }
 })
 
@@ -52,6 +57,10 @@ const expanded = ref(false)
 
 const hasChildren = computed(() => {
   return props.directory.children && props.directory.children.length > 0
+})
+
+const isSelected = computed(() => {
+  return props.selectedId === props.directory.id
 })
 
 const toggleExpanded = () => {
@@ -128,5 +137,25 @@ const toggleExpanded = () => {
 .compact-tree-item :deep(.v-list-item-title) {
   line-height: 1.2;
   font-size: 0.875rem !important;
+}
+
+/* Highlight selected item */
+.selected-item {
+  background-color: rgba(25, 118, 210, 0.12) !important;
+  border-left: 3px solid rgb(25, 118, 210) !important;
+}
+
+.v-theme--dark .selected-item {
+  background-color: rgba(144, 202, 249, 0.16) !important;
+  border-left: 3px solid rgb(144, 202, 249) !important;
+}
+
+.selected-item :deep(.v-list-item-title) {
+  color: rgb(25, 118, 210) !important;
+  font-weight: 500 !important;
+}
+
+.v-theme--dark .selected-item :deep(.v-list-item-title) {
+  color: rgb(144, 202, 249) !important;
 }
 </style>
