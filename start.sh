@@ -216,7 +216,7 @@ echo "🌐 Frontend: http://localhost:3000"
 echo "🔗 Backend API: http://localhost:8000/api"
 echo "📚 API Documentation: http://localhost:8000/api/documentation"
 echo "🗄️  phpMyAdmin: http://localhost:8080"
-echo "📧 Demo Login: admin@maurtiustelecom.mu / password"
+echo "📧 Demo Login: admin@telecom.mu / password"
 echo ""
 echo "Press Ctrl+C to stop all servers..."
 

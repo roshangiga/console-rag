@@ -1,95 +1,18 @@
 #!/bin/bash
 
 # Console Project Restart Script
-# This script stops all running services and restarts them
+# This script calls stop.sh and then start.sh for clean restart
 
 echo "🔄 Restarting Console Project..."
 echo "================================="
 
-# Function to find and kill processes by port
-kill_port() {
-    local port=$1
-    local name=$2
-    
-    echo "🛑 Stopping $name on port $port..."
-    
-    # Find PIDs using the port
-    PIDS=$(lsof -ti :$port 2>/dev/null)
-    
-    if [ ! -z "$PIDS" ]; then
-        echo "   Found processes: $PIDS"
-        kill $PIDS 2>/dev/null
-        sleep 2
-        
-        # Force kill if still running
-        REMAINING=$(lsof -ti :$port 2>/dev/null)
-        if [ ! -z "$REMAINING" ]; then
-            echo "   Force killing remaining processes: $REMAINING"
-            kill -9 $REMAINING 2>/dev/null
-        fi
-        
-        echo "✅ $name stopped successfully"
-    else
-        echo "   No processes found on port $port"
-    fi
-}
-
-# Function to kill processes by name pattern
-kill_by_name() {
-    local pattern=$1
-    local name=$2
-    
-    echo "🛑 Stopping $name processes..."
-    
-    PIDS=$(ps aux | grep "$pattern" | grep -v grep | awk '{print $2}')
-    
-    if [ ! -z "$PIDS" ]; then
-        echo "   Found processes: $PIDS"
-        kill $PIDS 2>/dev/null
-        sleep 2
-        
-        # Force kill if still running
-        REMAINING=$(ps aux | grep "$pattern" | grep -v grep | awk '{print $2}')
-        if [ ! -z "$REMAINING" ]; then
-            echo "   Force killing remaining processes: $REMAINING"
-            kill -9 $REMAINING 2>/dev/null
-        fi
-        
-        echo "✅ $name stopped successfully"
-    else
-        echo "   No $name processes found"
-    fi
-}
-
-# Stop all services
-echo "🛑 Stopping all Console services..."
-echo ""
-
-# Stop by port
-kill_port 8000 "Laravel Backend"
-kill_port 3000 "Vue.js Frontend" 
-kill_port 8080 "phpMyAdmin"
-
-# Stop by process pattern (backup method)
-kill_by_name "php artisan serve" "Laravel Artisan"
-kill_by_name "npm run dev" "NPM Dev Server"
-kill_by_name "php -S localhost:8080" "PHP Built-in Server"
-
-echo ""
-echo "⏳ Waiting for services to fully stop..."
-sleep 3
-
-# Clear any stale processes
-pkill -f "artisan serve" 2>/dev/null
-pkill -f "npm run dev" 2>/dev/null
-pkill -f "php -S localhost:8080" 2>/dev/null
-
-echo "✅ All services stopped."
-echo ""
-
-# Start services again
-echo "🚀 Starting Console Project..."
-echo "=============================="
+# Check if stop.sh exists and is executable
+if [ ! -x "./stop.sh" ]; then
+    echo "❌ stop.sh not found or not executable"
+    echo "   Make sure you're in the project root directory"
+    echo "   Run: chmod +x stop.sh"
+    exit 1
+fi
 
 # Check if start.sh exists and is executable
 if [ ! -x "./start.sh" ]; then
@@ -99,5 +22,16 @@ if [ ! -x "./start.sh" ]; then
     exit 1
 fi
 
-# Start the application
+# Stop all services first
+echo "📍 Step 1: Stopping all services..."
+./stop.sh
+
+# Wait a moment for complete shutdown
+echo ""
+echo "⏳ Waiting for complete shutdown..."
+sleep 2
+
+# Start all services
+echo ""
+echo "📍 Step 2: Starting all services..."
 exec ./start.sh

@@ -63,7 +63,7 @@
 
           <v-card-text class="text-center">
             <p class="text-caption">
-              Demo Credentials: admin@maurtiustelecom.mu / password
+              Demo Credentials: admin@telecom.mu / password
             </p>
           </v-card-text>
         </v-card>

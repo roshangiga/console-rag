@@ -59,7 +59,7 @@ A comprehensive RAG (Retrieval-Augmented Generation) document management system 
 
 ## 🔐 Demo Credentials
 
-- **Email**: admin@maurtiustelecom.mu
+- **Email**: admin@telecom.mu
 - **Password**: password
 
 ## 🏗️ Architecture
