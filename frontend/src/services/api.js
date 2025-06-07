@@ -58,6 +58,9 @@ export const apiService = {
   updateDocument: (id, data) => apiClient.put(`/documents/${id}`, data),
   deleteDocument: (id) => apiClient.delete(`/documents/${id}`),
   processDocument: (id) => apiClient.post(`/documents/${id}/process`),
+  downloadDocument: (id) => apiClient.get(`/documents/${id}/download`, {
+    responseType: 'blob' // Important for binary file downloads
+  }),
 
   // Tags
   getTags: () => apiClient.get('/tags')

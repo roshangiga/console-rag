@@ -7,6 +7,7 @@
     </div>
 
     <FileBrowser
+      ref="fileBrowserRef"
       @upload="handleUpload"
       @edit="handleEdit"
       @delete="handleDelete"
@@ -49,87 +50,138 @@
     <!-- Upload Dialog -->
     <v-dialog
       v-model="showUploadDialog"
-      max-width="600"
+      max-width="1200"
     >
       <v-card>
-        <v-card-title>Upload Documents</v-card-title>
+        <v-card-title class="d-flex align-center justify-space-between">
+          <span>Upload Documents</span>
+          <v-btn
+            icon="mdi-close"
+            variant="text"
+            @click="showUploadDialog = false"
+          />
+        </v-card-title>
         <v-card-text>
-          <!-- Current Location Display -->
-          <v-alert
-            type="info"
-            variant="tonal"
-            density="compact"
-            class="mb-4"
+          <!-- Loading State -->
+          <div
+            v-if="loadingUploadDialog"
+            class="text-center py-8"
           >
-            <v-icon slot="prepend">mdi-folder</v-icon>
-            <strong>Upload Location:</strong> {{ currentDirectoryPath }}
-          </v-alert>
-          <v-file-input
-            v-model="selectedFiles"
-            label="Select files"
-            multiple
-            variant="outlined"
-            show-size
-            accept="*/*"
-          />
+            <v-progress-circular
+              indeterminate
+              color="primary"
+              size="40"
+              class="mb-4"
+            />
+            <p class="text-body-2">
+              Preparing upload dialog...
+            </p>
+          </div>
           
-          <v-select
-            v-model="uploadType"
-            :items="documentTypes"
-            label="Document Type"
-            variant="outlined"
-            class="mt-4"
-          />
-          
-          <v-text-field
-            v-model="uploadPurpose"
-            label="Purpose (optional)"
-            variant="outlined"
-            class="mt-2"
-          />
-          
-          <v-row class="mt-2">
+          <!-- Upload Content -->
+          <v-row v-else>
+            <!-- Left Column - Drag & Drop -->
             <v-col
               cols="12"
               md="6"
             >
-              <v-select
-                v-model="uploadTags"
-                :items="tagOptions"
-                label="Tags"
-                variant="outlined"
-                multiple
-                chips
+              <DragDropUpload
+                ref="uploadComponent"
+                @files-selected="handleFilesSelected"
+                @error="handleUploadError"
               />
             </v-col>
+            
+            <!-- Right Column - Document Details -->
             <v-col
               cols="12"
               md="6"
             >
-              <v-text-field
-                v-model="uploadVersion"
-                label="Version"
-                variant="outlined"
-                min="0.1"
-                step="0.1"
-                hint="Default version is 1.0 for new documents"
-                persistent-hint
-              />
+              <v-expand-transition>
+                <div v-if="uploadFiles.length > 0">
+                  <h4 class="text-subtitle-1 mb-3">
+                    Document Details
+                  </h4>
+                  
+                  <v-text-field
+                    v-model="uploadForm.title"
+                    label="Document Title"
+                    variant="outlined"
+                    density="compact"
+                    class="mb-3"
+                    placeholder="Enter a descriptive title for the document"
+                    hint="This will be the display name for your document"
+                    persistent-hint
+                  />
+                  
+                  <DirectoryTreeSelector
+                    v-model="uploadForm.directory_id"
+                    label="Upload Directory"
+                    density="compact"
+                    class="mb-3 directory-selector-field"
+                  />
+                  
+                  <v-select
+                    v-model="uploadForm.type"
+                    :items="documentTypes"
+                    label="Document Type"
+                    variant="outlined"
+                    density="compact"
+                    class="mb-3"
+                  />
+                  
+                  <v-textarea
+                    v-model="uploadForm.purpose"
+                    label="Purpose (Optional)"
+                    variant="outlined"
+                    rows="4"
+                    density="compact"
+                    class="mb-3"
+                  />
+                  
+                  <v-select
+                    v-model="uploadForm.tags"
+                    :items="['Internal', 'Enterprise', 'Public']"
+                    label="Tags"
+                    variant="outlined"
+                    multiple
+                    chips
+                    density="compact"
+                  />
+                </div>
+                <div
+                  v-else
+                  class="text-center text-medium-emphasis mt-8"
+                >
+                  <v-icon
+                    size="48"
+                    color="grey-lighten-1"
+                    class="mb-2"
+                  >
+                    mdi-form-select
+                  </v-icon>
+                  <p class="text-body-2">
+                    Select files to configure document details
+                  </p>
+                </div>
+              </v-expand-transition>
             </v-col>
           </v-row>
         </v-card-text>
-        <v-card-actions>
+        <v-card-actions v-if="!loadingUploadDialog">
           <v-spacer />
-          <v-btn @click="showUploadDialog = false">
+          <v-btn
+            variant="text"
+            @click="closeUploadDialog"
+          >
             Cancel
           </v-btn>
           <v-btn
             color="primary"
-            :loading="uploading"
-            :disabled="!selectedFiles || selectedFiles.length === 0"
-            @click="uploadFiles"
+            :disabled="uploadFiles.length === 0"
+            @click="uploadDocuments"
           >
-            Upload
+            Upload {{ uploadFiles.length }} File{{ uploadFiles.length !== 1 ? 's' : '' }}
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -226,10 +278,15 @@
 import { ref, inject, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import FileBrowser from '@/components/FileBrowser.vue'
+import DragDropUpload from '@/components/DragDropUpload.vue'
+import DirectoryTreeSelector from '@/components/DirectoryTreeSelector.vue'
 import { apiService } from '@/services/api'
 
 const route = useRoute()
 const showSnackbar = inject('showSnackbar')
+
+// Component refs
+const fileBrowserRef = ref(null)
 
 // Dialog states
 const showCreateFolderDialog = ref(false)
@@ -242,17 +299,22 @@ const creatingFolder = ref(false)
 const uploading = ref(false)
 const editing = ref(false)
 const deleting = ref(false)
+const loadingUploadDialog = ref(false)
 
 // Create folder
 const newFolderName = ref('')
 const folderNameErrors = ref([])
 
 // Upload
-const selectedFiles = ref([])
-const uploadType = ref('General_Doc')
-const uploadPurpose = ref('')
-const uploadTags = ref([])
-const uploadVersion = ref('1.0')
+const uploadComponent = ref(null)
+const uploadFiles = ref([])
+const uploadForm = ref({
+  title: '',
+  directory_id: null,
+  type: 'General_Doc',
+  purpose: '',
+  tags: []
+})
 const currentDirectoryPath = ref('/')
 
 // Edit
@@ -274,16 +336,27 @@ const documentTypes = [
   { title: 'General Documents', value: 'General_Doc' }
 ]
 
-const tagOptions = [
-  { title: 'Internal', value: 'Internal' },
-  { title: 'Enterprise', value: 'Enterprise' },
-  { title: 'Public', value: 'Public' }
-]
+// const tagOptions = [
+//   { title: 'Internal', value: 'Internal' },
+//   { title: 'Enterprise', value: 'Enterprise' },
+//   { title: 'Public', value: 'Public' }
+// ]
 
 // Event handlers
 const handleUpload = async () => {
-  await updateCurrentDirectoryPath()
   showUploadDialog.value = true
+  loadingUploadDialog.value = true
+  
+  try {
+    await updateCurrentDirectoryPath()
+    // Set the current directory as the default upload location
+    uploadForm.value.directory_id = getCurrentDirectoryId()
+  } catch (error) {
+    console.error('Failed to prepare upload dialog:', error)
+    showSnackbar('Failed to prepare upload dialog', 'error')
+  } finally {
+    loadingUploadDialog.value = false
+  }
 }
 
 const handleEdit = (item) => {
@@ -328,8 +401,10 @@ const createFolder = async () => {
     showCreateFolderDialog.value = false
     newFolderName.value = ''
     
-    // Refresh the current directory
-    window.location.reload()
+    // Refresh the FileBrowser component
+    if (fileBrowserRef.value) {
+      await fileBrowserRef.value.refreshCurrentDirectory()
+    }
   } catch (error) {
     const message = error.response?.data?.message || 'Failed to create folder'
     showSnackbar(message, 'error')
@@ -338,34 +413,111 @@ const createFolder = async () => {
   }
 }
 
-// Upload files
-const uploadFiles = async () => {
+// Upload handlers
+const handleFilesSelected = (files) => {
+  uploadFiles.value = files
+}
+
+const handleUploadError = (error) => {
+  showSnackbar(error, 'error')
+}
+
+const closeUploadDialog = () => {
+  showUploadDialog.value = false
+  loadingUploadDialog.value = false
+  uploadFiles.value = []
+  uploadForm.value = {
+    title: '',
+    directory_id: null,
+    type: 'General_Doc',
+    purpose: '',
+    tags: []
+  }
+  if (uploadComponent.value) {
+    uploadComponent.value.clearFiles()
+  }
+}
+
+const uploadDocuments = async () => {
   uploading.value = true
   try {
-    const formData = new FormData()
+    const totalFiles = uploadFiles.value.length
+    let successCount = 0
+    let failedFiles = []
     
-    selectedFiles.value.forEach(file => {
-      formData.append('files[]', file)
-    })
+    for (let i = 0; i < totalFiles; i++) {
+      const file = uploadFiles.value[i]
+      
+      // Check file size (50MB limit)
+      const maxSizeBytes = 50 * 1024 * 1024 // 50MB in bytes
+      if (file.size > maxSizeBytes) {
+        failedFiles.push(file.name)
+        showSnackbar(`✗ ${file.name} is too large. Maximum size is 50MB.`, 'error')
+        continue
+      }
+      
+      // Show progress toast
+      showSnackbar(`Uploading ${file.name}... (${i + 1}/${totalFiles})`, 'info')
+      
+      // Create FormData for file upload
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('name', uploadForm.value.title || file.name.replace(/\.[^/.]+$/, '')) // Use title if provided, fallback to filename
+      formData.append('directory_id', uploadForm.value.directory_id || getCurrentDirectoryId())
+      formData.append('type', uploadForm.value.type)
+      formData.append('purpose', uploadForm.value.purpose || `Upload of ${file.name}`)
+      formData.append('version', '1.0') // Default version
+      
+      // Add tags if any
+      if (uploadForm.value.tags && uploadForm.value.tags.length > 0) {
+        uploadForm.value.tags.forEach((tag, index) => {
+          formData.append(`tags[${index}]`, tag)
+        })
+      }
+      
+      try {
+        // Upload the document
+        const response = await apiService.createDocument(formData)
+        
+        if (response.status === 201) {
+          successCount++
+          showSnackbar(`✓ ${file.name} uploaded successfully`, 'success')
+        }
+      } catch (error) {
+        console.error(`Failed to upload ${file.name}:`, error)
+        failedFiles.push(file.name)
+        
+        // Extract validation error message if available
+        let errorMessage = `✗ Failed to upload ${file.name}`
+        if (error.response?.data?.errors) {
+          const firstError = Object.values(error.response.data.errors)[0]
+          errorMessage += `: ${Array.isArray(firstError) ? firstError[0] : firstError}`
+        } else if (error.response?.data?.message) {
+          errorMessage += `: ${error.response.data.message}`
+        }
+        
+        showSnackbar(errorMessage, 'error')
+      }
+    }
     
-    formData.append('type', uploadType.value)
-    formData.append('purpose', uploadPurpose.value)
-    formData.append('directory_id', getCurrentDirectoryId())
-    formData.append('version', uploadVersion.value)
+    // Show final summary
+    if (successCount === totalFiles) {
+      showSnackbar(`All ${totalFiles} files uploaded successfully!`, 'success')
+    } else if (successCount > 0) {
+      showSnackbar(`Uploaded ${successCount}/${totalFiles} files. Failed: ${failedFiles.join(', ')}`, 'warning')
+    } else {
+      showSnackbar('All uploads failed. Please try again.', 'error')
+    }
     
-    uploadTags.value.forEach(tag => {
-      formData.append('tags[]', tag)
-    })
-    
-    await apiService.createDocument(formData)
-    
-    showSnackbar('Files uploaded successfully', 'success')
-    showUploadDialog.value = false
-    resetUploadForm()
-    
-    // Refresh the current directory
-    window.location.reload()
+    if (successCount > 0) {
+      closeUploadDialog()
+      // Refresh the FileBrowser component
+      if (fileBrowserRef.value) {
+        await fileBrowserRef.value.refreshCurrentDirectory()
+      }
+    }
   } catch (error) {
+    console.error('Upload error:', error)
     const message = error.response?.data?.message || 'Failed to upload files'
     showSnackbar(message, 'error')
   } finally {
@@ -397,8 +549,10 @@ const saveEdit = async () => {
     showSnackbar('Item updated successfully', 'success')
     showEditDialog.value = false
     
-    // Refresh the current directory
-    window.location.reload()
+    // Refresh the FileBrowser component
+    if (fileBrowserRef.value) {
+      await fileBrowserRef.value.refreshCurrentDirectory()
+    }
   } catch (error) {
     const message = error.response?.data?.message || 'Failed to update item'
     showSnackbar(message, 'error')
@@ -420,8 +574,10 @@ const confirmDelete = async () => {
     showSnackbar('Item deleted successfully', 'success')
     showDeleteDialog.value = false
     
-    // Refresh the current directory
-    window.location.reload()
+    // Refresh the FileBrowser component
+    if (fileBrowserRef.value) {
+      await fileBrowserRef.value.refreshCurrentDirectory()
+    }
   } catch (error) {
     const message = error.response?.data?.message || 'Failed to delete item'
     showSnackbar(message, 'error')
@@ -433,13 +589,14 @@ const confirmDelete = async () => {
 // Utility functions
 const getCurrentDirectoryId = () => {
   const urlParams = new URLSearchParams(window.location.search)
-  return urlParams.get('dir') || 0
+  const dirParam = urlParams.get('dir')
+  return dirParam ? parseInt(dirParam) : 0 // 0 represents root directory
 }
 
 const updateCurrentDirectoryPath = async () => {
   // Get the current directory path from URL parameters or set to root
   const dirParam = getCurrentDirectoryId()
-  if (dirParam === 0 || dirParam === '0') {
+  if (dirParam === 0) {
     currentDirectoryPath.value = 'Root'
   } else {
     try {
@@ -462,21 +619,24 @@ const updateCurrentDirectoryPath = async () => {
   }
 }
 
-const resetUploadForm = () => {
-  selectedFiles.value = []
-  uploadType.value = 'General_Doc'
-  uploadPurpose.value = ''
-  uploadTags.value = []
-  uploadVersion.value = '1.0'
-}
 
 // Check for actions on mount
 onMounted(async () => {
   if (route.query.action === 'create-folder') {
     showCreateFolderDialog.value = true
   } else if (route.query.action === 'upload') {
-    await updateCurrentDirectoryPath()
-    showUploadDialog.value = true
+    await handleUpload()
   }
 })
 </script>
+
+<style scoped>
+/* Directory selector field styling */
+.directory-selector-field {
+  cursor: pointer !important;
+}
+
+.directory-selector-field * {
+  cursor: pointer !important;
+}
+</style>

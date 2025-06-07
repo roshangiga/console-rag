@@ -41,7 +41,8 @@ export const useDocumentsStore = defineStore('documents', () => {
   const createDocument = async (documentData) => {
     try {
       const response = await apiService.createDocument(documentData)
-      await fetchDocuments() // Refresh the list
+      // Add the new document to the beginning of the array
+      documents.value.unshift(response.data)
       return response.data
     } catch (err) {
       error.value = err.response?.data?.message || 'Failed to create document'
@@ -52,7 +53,11 @@ export const useDocumentsStore = defineStore('documents', () => {
   const updateDocument = async (id, documentData) => {
     try {
       const response = await apiService.updateDocument(id, documentData)
-      await fetchDocuments() // Refresh the list
+      // Update the document in the local array
+      const index = documents.value.findIndex(doc => doc.id === id)
+      if (index > -1) {
+        documents.value[index] = response.data
+      }
       return response.data
     } catch (err) {
       error.value = err.response?.data?.message || 'Failed to update document'
@@ -63,7 +68,11 @@ export const useDocumentsStore = defineStore('documents', () => {
   const deleteDocument = async (id) => {
     try {
       await apiService.deleteDocument(id)
-      await fetchDocuments() // Refresh the list
+      // Remove the document from the local array instead of refetching
+      const index = documents.value.findIndex(doc => doc.id === id)
+      if (index > -1) {
+        documents.value.splice(index, 1)
+      }
     } catch (err) {
       error.value = err.response?.data?.message || 'Failed to delete document'
       throw err

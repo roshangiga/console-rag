@@ -13,6 +13,7 @@ class Document extends Model
         'name',
         'directory_id',
         'file_path',
+        'file_size',
         'version',
         'type',
         'purpose',

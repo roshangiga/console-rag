@@ -54,8 +54,10 @@ class DirectoryController extends Controller
             'parent_id' => 'nullable|exists:directories,id',
         ]);
 
+        // Note: We store the display name as provided by user
+        // The storage path will be automatically sanitized by DocumentController
         $directory = Directory::create([
-            'name' => $request->name,
+            'name' => trim($request->name), // Just trim whitespace, keep original casing
             'parent_id' => $request->parent_id,
             'created_by' => $request->user()->id,
         ]);
@@ -71,7 +73,12 @@ class DirectoryController extends Controller
         ]);
 
         $directory = Directory::findOrFail($id);
-        $directory->update($request->only(['name', 'parent_id']));
+
+        // Update with trimmed name, preserving user's preferred display format
+        $directory->update([
+            'name' => trim($request->name),
+            'parent_id' => $request->parent_id,
+        ]);
 
         return response()->json($directory->load('creator'));
     }
@@ -90,6 +97,25 @@ class DirectoryController extends Controller
                 required: true,
                 schema: new OA\Schema(type: 'integer')
             ),
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Directory contents retrieved successfully',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'current_directory', type: 'object', nullable: true),
+                        new OA\Property(property: 'directories', type: 'array', items: new OA\Items(type: 'object')),
+                        new OA\Property(property: 'documents', type: 'array', items: new OA\Items(type: 'object')),
+                        new OA\Property(property: 'breadcrumbs', type: 'array', items: new OA\Items(type: 'object')),
+                        new OA\Property(property: 'stats', type: 'object'),
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 404,
+                description: 'Directory not found'
+            ),
         ]
     )]
     public function getContents($id)
@@ -100,7 +126,13 @@ class DirectoryController extends Controller
                 ->whereNull('parent_id')
                 ->orderBy('name')
                 ->get();
-            $documents = collect();
+
+            // Fetch documents at root level (directory_id = null)
+            $documents = \App\Models\Document::with(['creator', 'tags'])
+                ->whereNull('directory_id')
+                ->orderBy('name')
+                ->get();
+
             $currentDirectory = null;
             $breadcrumbs = [['id' => 0, 'name' => 'Root', 'path' => '/']];
         } else {

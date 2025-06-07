@@ -5,7 +5,7 @@
         "description": "Console Document Management System API - A comprehensive RAG (Retrieval-Augmented Generation) system for managing documents with hierarchical directory structure",
         "contact": {
             "name": "Mauritius Telecom Innovation Team",
-            "email": "innovation@maurtiustelecom.mu"
+            "email": "innovation@telecom.mu"
         },
         "version": "1.0.0"
     },
@@ -189,6 +189,489 @@
                     }
                 ]
             }
+        },
+        "/directories/{id}/contents": {
+            "get": {
+                "tags": [
+                    "Directories"
+                ],
+                "summary": "Get directory contents",
+                "description": "Get detailed contents of a specific directory including subdirectories and documents",
+                "operationId": "99dc28d82392b1f2e8dd03cc441d4f09",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Directory ID (use 0 for root)",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Directory contents retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "current_directory": {
+                                            "type": "object",
+                                            "nullable": true
+                                        },
+                                        "directories": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "documents": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "breadcrumbs": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "stats": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Directory not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/documents": {
+            "get": {
+                "tags": [
+                    "Documents"
+                ],
+                "summary": "Get documents list",
+                "description": "Retrieve all documents with optional filtering",
+                "operationId": "cf58d1781992e8292fd9914b24487fdc",
+                "parameters": [
+                    {
+                        "name": "directory_id",
+                        "in": "query",
+                        "description": "Filter by directory ID",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "Filter by document type",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "QA",
+                                "Image",
+                                "Process_Chart",
+                                "Presentation",
+                                "General_Doc"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter by status",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "SUCCESS",
+                                "FAILED",
+                                "UPDATING"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Search by document name",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Documents retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "file_path": {
+                                                "type": "string"
+                                            },
+                                            "version": {
+                                                "type": "string"
+                                            },
+                                            "type": {
+                                                "type": "string"
+                                            },
+                                            "purpose": {
+                                                "type": "string"
+                                            },
+                                            "status": {
+                                                "type": "string"
+                                            },
+                                            "directory": {
+                                                "type": "object"
+                                            },
+                                            "creator": {
+                                                "type": "object"
+                                            },
+                                            "tags": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object"
+                                                }
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Documents"
+                ],
+                "summary": "Upload a new document",
+                "description": "Upload a document file with metadata and tags",
+                "operationId": "1c3ad2906b68a58de1f603260ab271c4",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "directory_id",
+                                    "file",
+                                    "type"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "description": "Document name",
+                                        "type": "string"
+                                    },
+                                    "directory_id": {
+                                        "description": "Directory ID",
+                                        "type": "integer"
+                                    },
+                                    "file": {
+                                        "description": "The file to upload",
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "version": {
+                                        "description": "Document version",
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "QA",
+                                            "Image",
+                                            "Process_Chart",
+                                            "Presentation",
+                                            "General_Doc"
+                                        ]
+                                    },
+                                    "purpose": {
+                                        "description": "Document purpose",
+                                        "type": "string"
+                                    },
+                                    "tags": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Internal",
+                                                "Enterprise",
+                                                "Public"
+                                            ]
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Document uploaded successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "file_path": {
+                                            "type": "string"
+                                        },
+                                        "file_size": {
+                                            "type": "integer"
+                                        },
+                                        "version": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "purpose": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "directory": {
+                                            "type": "object"
+                                        },
+                                        "creator": {
+                                            "type": "object"
+                                        },
+                                        "tags": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/documents/{id}": {
+            "delete": {
+                "tags": [
+                    "Documents"
+                ],
+                "summary": "Delete document",
+                "description": "Delete a document and its associated file from storage",
+                "operationId": "797f07f3ce355da8e70bf49bb13caa6f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Document ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Document deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Document deleted successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Document not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/documents/{id}/process": {
+            "post": {
+                "tags": [
+                    "Documents"
+                ],
+                "summary": "Process document",
+                "description": "Initiate document processing with simulated delay and random status",
+                "operationId": "4c466ee84f083179467d42f88feab0cc",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Document ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Document processing initiated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Document processing initiated"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "enum": [
+                                                "SUCCESS",
+                                                "FAILED",
+                                                "UPDATING"
+                                            ]
+                                        },
+                                        "document": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Document not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/documents/{id}/download": {
+            "get": {
+                "tags": [
+                    "Documents"
+                ],
+                "summary": "Download document file",
+                "description": "Download or preview a document file by ID. Returns the actual file content with appropriate headers for browser viewing or downloading.",
+                "operationId": "ec38afe36268518adfa2badec935ae7c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Document ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "File downloaded successfully",
+                        "headers": {
+                            "Content-Type": {
+                                "description": "MIME type of the file",
+                                "schema": {
+                                    "type": "string"
+                                }
+                            },
+                            "Content-Disposition": {
+                                "description": "File disposition (inline for preview, attachment for download)",
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/octet-stream": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Document or file not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "File not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
         }
     },
     "components": {
@@ -203,11 +686,15 @@
     "tags": [
         {
             "name": "Authentication",
-            "description": "Authentication"
+            "description": "User authentication and authorization endpoints"
         },
         {
             "name": "Directories",
-            "description": "Directories"
+            "description": "Directory management and navigation endpoints"
+        },
+        {
+            "name": "Documents",
+            "description": "Document management, upload, download, and processing endpoints"
         }
     ]
 }

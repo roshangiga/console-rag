@@ -143,7 +143,7 @@
               fixed-header
               :height="600"
             >
-              <!-- Name column with icons and path -->
+              <!-- Title column with icons and path -->
               <template #item.name="{ item }">
                 <div class="d-flex align-center">
                   <v-icon
@@ -154,13 +154,24 @@
                     {{ getDocumentIcon(item.type, getActualFileName(item)) }}
                   </v-icon>
                   <div>
-                    <div class="font-weight-medium">
-                      {{ getActualFileName(item) }}
+                    <div 
+                      class="font-weight-medium cursor-pointer item-title"
+                      @click="handleDocumentClick(item)"
+                    >
+                      {{ item.name }}
                     </div>
                     <div class="d-flex align-center mt-1">
                       <span class="text-caption text-medium-emphasis">{{ getFormattedPath(item) }}</span>
                     </div>
                   </div>
+                </div>
+              </template>
+
+              <!-- Filename column -->
+              <template #item.filename="{ item }">
+                <div class="text-body-2 filename-compact">
+                  {{ getActualFileName(item) }} 
+                  <span class="filename-size">({{ formatFileSize(item.file_size) }})</span>
                 </div>
               </template>
 
@@ -175,12 +186,7 @@
                 </v-chip>
               </template>
 
-              <!-- Size column -->
-              <template #item.size="{ item }">
-                <span>{{ formatFileSize(item.file_size) }}</span>
-              </template>
-
-              <!-- Owner column -->
+              <!-- Uploader column -->
               <template #item.owner="{ item }">
                 <div class="d-flex align-center">
                   <v-avatar
@@ -211,6 +217,7 @@
                   :color="getStatusColor(item.status)"
                   size="small"
                   variant="outlined"
+                  class="square-pill"
                 >
                   {{ item.status }}
                 </v-chip>
@@ -247,6 +254,14 @@
                           mdi-cog
                         </v-icon>
                         Process
+                      </v-list-item-title>
+                    </v-list-item>
+                    <v-list-item @click="moveDocument(item)">
+                      <v-list-item-title>
+                        <v-icon left>
+                          mdi-folder-move
+                        </v-icon>
+                        Move To
                       </v-list-item-title>
                     </v-list-item>
                     <v-list-item @click="editDocument(item)">
@@ -297,7 +312,9 @@
                                   {{ getDocumentIcon(item.type, getActualFileName(item)) }}
                                 </v-icon>
                                 <div>
-                                  <h3 class="text-h6 mb-1">{{ getActualFileName(item) }}</h3>
+                                  <h3 class="text-h6 mb-1">
+                                    {{ item.name }}
+                                  </h3>
                                   <div class="d-flex align-center gap-2">
                                     <v-chip
                                       :color="getTypeColor(item.type)"
@@ -310,6 +327,7 @@
                                       :color="getStatusColor(item.status)"
                                       size="small"
                                       variant="outlined"
+                                      class="square-pill"
                                     >
                                       {{ item.status }}
                                     </v-chip>
@@ -327,7 +345,10 @@
                               
                               <!-- Quick actions -->
                               <div class="d-flex align-center gap-2">
-                                <v-tooltip text="Quick Preview" location="top">
+                                <v-tooltip
+                                  text="Quick Preview"
+                                  location="top"
+                                >
                                   <template #activator="{ props: tooltipProps }">
                                     <v-btn
                                       v-bind="tooltipProps"
@@ -340,7 +361,10 @@
                                   </template>
                                 </v-tooltip>
                                 
-                                <v-tooltip text="Download" location="top">
+                                <v-tooltip
+                                  text="Download"
+                                  location="top"
+                                >
                                   <template #activator="{ props: tooltipProps }">
                                     <v-btn
                                       v-bind="tooltipProps"
@@ -353,7 +377,10 @@
                                   </template>
                                 </v-tooltip>
                                 
-                                <v-tooltip text="Process" location="top">
+                                <v-tooltip
+                                  text="Process"
+                                  location="top"
+                                >
                                   <template #activator="{ props: tooltipProps }">
                                     <v-btn
                                       v-bind="tooltipProps"
@@ -366,7 +393,10 @@
                                   </template>
                                 </v-tooltip>
                                 
-                                <v-tooltip text="Edit" location="top">
+                                <v-tooltip
+                                  text="Edit"
+                                  location="top"
+                                >
                                   <template #activator="{ props: tooltipProps }">
                                     <v-btn
                                       v-bind="tooltipProps"
@@ -379,7 +409,10 @@
                                   </template>
                                 </v-tooltip>
                                 
-                                <v-tooltip text="Share" location="top">
+                                <v-tooltip
+                                  text="Share"
+                                  location="top"
+                                >
                                   <template #activator="{ props: tooltipProps }">
                                     <v-btn
                                       v-bind="tooltipProps"
@@ -401,12 +434,20 @@
                           <v-card-text class="expanded-body">
                             <v-row class="align-start">
                               <!-- Left column - Metadata -->
-                              <v-col cols="12" md="8">
+                              <v-col
+                                cols="12"
+                                md="8"
+                              >
                                 <div class="metadata-grid">
                                   <!-- Document specific info -->
                                   <div class="info-section">
                                     <h4 class="text-subtitle-1 mb-2 text-medium-emphasis">
-                                      <v-icon size="18" class="mr-1">mdi-file-document</v-icon>
+                                      <v-icon
+                                        size="18"
+                                        class="mr-1"
+                                      >
+                                        mdi-file-document
+                                      </v-icon>
                                       Document Information
                                     </h4>
                                     <div class="info-grid">
@@ -414,11 +455,21 @@
                                         <span class="info-label">File Size:</span>
                                         <span class="info-value">{{ formatFileSize(item.file_size) }}</span>
                                       </div>
-                                      <div v-if="item.purpose" class="info-item">
+                                      <div class="info-item">
+                                        <span class="info-label">Filename:</span>
+                                        <span class="info-value">{{ getActualFileName(item) }}</span>
+                                      </div>
+                                      <div
+                                        v-if="item.purpose"
+                                        class="info-item"
+                                      >
                                         <span class="info-label">Purpose:</span>
                                         <span class="info-value">{{ item.purpose }}</span>
                                       </div>
-                                      <div v-if="item.directory" class="info-item">
+                                      <div
+                                        v-if="item.directory"
+                                        class="info-item"
+                                      >
                                         <span class="info-label">Directory:</span>
                                         <span class="info-value">{{ item.directory.name }}</span>
                                       </div>
@@ -432,7 +483,12 @@
                                   <!-- Timestamps -->
                                   <div class="info-section">
                                     <h4 class="text-subtitle-1 mb-2 text-medium-emphasis">
-                                      <v-icon size="18" class="mr-1">mdi-clock</v-icon>
+                                      <v-icon
+                                        size="18"
+                                        class="mr-1"
+                                      >
+                                        mdi-clock
+                                      </v-icon>
                                       Timeline
                                     </h4>
                                     <div class="info-grid">
@@ -447,7 +503,10 @@
                                       <div class="info-item">
                                         <span class="info-label">Owner:</span>
                                         <span class="info-value d-flex align-center">
-                                          <v-avatar size="20" class="mr-2">
+                                          <v-avatar
+                                            size="20"
+                                            class="mr-2"
+                                          >
                                             <v-icon size="12">mdi-account</v-icon>
                                           </v-avatar>
                                           {{ item.creator?.name || 'Unknown' }}
@@ -457,9 +516,17 @@
                                   </div>
                                   
                                   <!-- Path and Location -->
-                                  <div v-if="item.file_path" class="info-section">
+                                  <div
+                                    v-if="item.file_path"
+                                    class="info-section"
+                                  >
                                     <h4 class="text-subtitle-1 mb-2 text-medium-emphasis">
-                                      <v-icon size="18" class="mr-1">mdi-map-marker-path</v-icon>
+                                      <v-icon
+                                        size="18"
+                                        class="mr-1"
+                                      >
+                                        mdi-map-marker-path
+                                      </v-icon>
                                       Location
                                     </h4>
                                     <div class="path-display">
@@ -474,16 +541,29 @@
                                   </div>
                                   
                                   <!-- Metadata section -->
-                                  <div v-if="item.metadata" class="info-section">
+                                  <div
+                                    v-if="item.metadata"
+                                    class="info-section"
+                                  >
                                     <h4 class="text-subtitle-1 mb-2 text-medium-emphasis">
-                                      <v-icon size="18" class="mr-1">mdi-code-json</v-icon>
+                                      <v-icon
+                                        size="18"
+                                        class="mr-1"
+                                      >
+                                        mdi-code-json
+                                      </v-icon>
                                       Technical Metadata
                                     </h4>
                                     <div class="metadata-display">
                                       <v-expansion-panels variant="accordion">
                                         <v-expansion-panel>
                                           <v-expansion-panel-title>
-                                            <v-icon size="16" class="mr-2">mdi-information-outline</v-icon>
+                                            <v-icon
+                                              size="16"
+                                              class="mr-2"
+                                            >
+                                              mdi-information-outline
+                                            </v-icon>
                                             View Technical Details
                                           </v-expansion-panel-title>
                                           <v-expansion-panel-text>
@@ -497,11 +577,22 @@
                               </v-col>
                               
                               <!-- Right column - Tags and Actions -->
-                              <v-col cols="12" md="4">
+                              <v-col
+                                cols="12"
+                                md="4"
+                              >
                                 <!-- Tags section -->
-                                <div v-if="item.tags && item.tags.length" class="info-section">
+                                <div
+                                  v-if="item.tags && item.tags.length"
+                                  class="info-section"
+                                >
                                   <h4 class="text-subtitle-1 mb-2 text-medium-emphasis">
-                                    <v-icon size="18" class="mr-1">mdi-tag-multiple</v-icon>
+                                    <v-icon
+                                      size="18"
+                                      class="mr-1"
+                                    >
+                                      mdi-tag-multiple
+                                    </v-icon>
                                     Tags
                                   </h4>
                                   <div class="tags-container">
@@ -513,7 +604,12 @@
                                       variant="outlined"
                                       color="primary"
                                     >
-                                      <v-icon size="14" class="mr-1">mdi-tag</v-icon>
+                                      <v-icon
+                                        size="14"
+                                        class="mr-1"
+                                      >
+                                        mdi-tag
+                                      </v-icon>
                                       {{ tag.tag_name }}
                                     </v-chip>
                                   </div>
@@ -522,10 +618,32 @@
                                 <!-- Action buttons -->
                                 <div class="info-section">
                                   <h4 class="text-subtitle-1 mb-2 text-medium-emphasis">
-                                    <v-icon size="18" class="mr-1">mdi-cog</v-icon>
+                                    <v-icon
+                                      size="18"
+                                      class="mr-1"
+                                    >
+                                      mdi-cog
+                                    </v-icon>
                                     Actions
                                   </h4>
                                   <div class="action-buttons">
+                                    <v-btn
+                                      v-if="getActualFileName(item) && getActualFileName(item).toLowerCase().endsWith('.pdf')"
+                                      variant="outlined"
+                                      color="primary"
+                                      size="small"
+                                      class="mb-2 w-100"
+                                      @click="previewPdf(item)"
+                                    >
+                                      <v-icon
+                                        size="16"
+                                        class="mr-2"
+                                      >
+                                        mdi-eye
+                                      </v-icon>
+                                      Preview PDF
+                                    </v-btn>
+                                    
                                     <v-btn
                                       variant="outlined"
                                       color="primary"
@@ -533,7 +651,12 @@
                                       class="mb-2 w-100"
                                       @click="downloadDocument(item)"
                                     >
-                                      <v-icon size="16" class="mr-2">mdi-download</v-icon>
+                                      <v-icon
+                                        size="16"
+                                        class="mr-2"
+                                      >
+                                        mdi-download
+                                      </v-icon>
                                       Download
                                     </v-btn>
                                     
@@ -544,8 +667,29 @@
                                       class="mb-2 w-100"
                                       @click="processDocument(item)"
                                     >
-                                      <v-icon size="16" class="mr-2">mdi-cog</v-icon>
+                                      <v-icon
+                                        size="16"
+                                        class="mr-2"
+                                      >
+                                        mdi-cog
+                                      </v-icon>
                                       Process Document
+                                    </v-btn>
+                                    
+                                    <v-btn
+                                      variant="outlined"
+                                      color="purple"
+                                      size="small"
+                                      class="mb-2 w-100"
+                                      @click="moveDocument(item)"
+                                    >
+                                      <v-icon
+                                        size="16"
+                                        class="mr-2"
+                                      >
+                                        mdi-folder-move
+                                      </v-icon>
+                                      Move To Directory
                                     </v-btn>
                                     
                                     <v-btn
@@ -555,7 +699,12 @@
                                       class="mb-2 w-100"
                                       @click="editDocument(item)"
                                     >
-                                      <v-icon size="16" class="mr-2">mdi-pencil</v-icon>
+                                      <v-icon
+                                        size="16"
+                                        class="mr-2"
+                                      >
+                                        mdi-pencil
+                                      </v-icon>
                                       Edit Properties
                                     </v-btn>
                                     
@@ -566,7 +715,12 @@
                                       class="mb-2 w-100"
                                       @click="shareDocument(item)"
                                     >
-                                      <v-icon size="16" class="mr-2">mdi-share-variant</v-icon>
+                                      <v-icon
+                                        size="16"
+                                        class="mr-2"
+                                      >
+                                        mdi-share-variant
+                                      </v-icon>
                                       Share
                                     </v-btn>
                                     
@@ -577,7 +731,12 @@
                                       class="w-100"
                                       @click="deleteDocument(item)"
                                     >
-                                      <v-icon size="16" class="mr-2">mdi-delete</v-icon>
+                                      <v-icon
+                                        size="16"
+                                        class="mr-2"
+                                      >
+                                        mdi-delete
+                                      </v-icon>
                                       Delete
                                     </v-btn>
                                   </div>
@@ -647,6 +806,17 @@
                   <h4 class="text-subtitle-1 mb-3">
                     Document Details
                   </h4>
+                  
+                  <v-text-field
+                    v-model="uploadForm.title"
+                    label="Document Title"
+                    variant="outlined"
+                    density="compact"
+                    class="mb-3"
+                    placeholder="Enter a descriptive title for the document"
+                    hint="This will be the display name for your document"
+                    persistent-hint
+                  />
                   
                   <DirectoryTreeSelector
                     v-model="uploadForm.directory_id"
@@ -720,6 +890,75 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Move Document Dialog -->
+    <v-dialog
+      v-model="showMoveDialog"
+      max-width="500"
+    >
+      <v-card>
+        <v-card-title class="d-flex align-center justify-space-between">
+          <span>Move Document</span>
+          <v-btn
+            icon="mdi-close"
+            variant="text"
+            @click="showMoveDialog = false"
+          />
+        </v-card-title>
+        <v-card-text>
+          <div
+            v-if="movingDocument"
+            class="mb-4"
+          >
+            <div class="d-flex align-center mb-3">
+              <v-icon
+                :color="getTypeColor(movingDocument.type)"
+                class="mr-3"
+                size="24"
+              >
+                {{ getDocumentIcon(movingDocument.type, getActualFileName(movingDocument)) }}
+              </v-icon>
+              <div>
+                <div class="font-weight-medium">
+                  {{ movingDocument.name }}
+                </div>
+                <div class="text-caption text-medium-emphasis">
+                  {{ getActualFileName(movingDocument) }}
+                </div>
+              </div>
+            </div>
+            
+            <v-divider class="mb-4" />
+            
+            <DirectoryTreeSelector
+              v-model="moveForm.directory_id"
+              label="Select Destination Directory"
+              density="compact"
+              class="directory-selector-field"
+            />
+          </div>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            variant="text"
+            @click="showMoveDialog = false"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            color="primary"
+            :loading="moving"
+            :disabled="!moveForm.directory_id && moveForm.directory_id !== 0"
+            @click="confirmMoveDocument"
+          >
+            Move Here
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- PDF Viewer removed - using browser's native viewer -->
   </v-container>
 </template>
 
@@ -728,6 +967,7 @@ import { ref, computed, onMounted, onUnmounted, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import { useDocumentsStore } from '@/stores/documents'
 import { useDirectoriesStore } from '@/stores/directories'
+import { apiService } from '@/services/api'
 import DragDropUpload from '@/components/DragDropUpload.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import DirectoryTreeSelector from '@/components/DirectoryTreeSelector.vue'
@@ -744,6 +984,7 @@ const statusFilter = ref(null)
 const uploadComponent = ref(null)
 const uploadFiles = ref([])
 const uploadForm = ref({
+  title: '',
   directory_id: null,
   type: 'General_Doc',
   purpose: '',
@@ -755,20 +996,29 @@ const selectedItemId = ref(null)
 const hoveredItemId = ref(null)
 const keyboardSelectedIndex = ref(0)
 
+// Move functionality
+const showMoveDialog = ref(false)
+const movingDocument = ref(null)
+const moving = ref(false)
+const moveForm = ref({
+  directory_id: null
+})
+
+// Remove PDF viewer state - using browser's native viewer now
+
 // Check if any filters are active
 const hasActiveFilters = computed(() => {
   return searchQuery.value || typeFilter.value || statusFilter.value
 })
 
 const headers = [
-  { title: 'Name', key: 'name', sortable: true, width: '25%' },
-  { title: 'Version', key: 'version', sortable: true, width: '8%' },
+  { title: 'Title', key: 'name', sortable: true, width: '27%' },
+  { title: 'Filename (Size)', key: 'filename', sortable: true, width: '25%' },
+  { title: 'Version', key: 'version', sortable: true, width: '5%' },
   { title: 'Type', key: 'type', sortable: true, width: '12%' },
-  { title: 'Size', key: 'size', sortable: false, width: '10%' },
-  { title: 'Owner', key: 'owner', sortable: true, width: '15%' },
-  { title: 'Modified', key: 'modified', sortable: true, width: '15%' },
-  { title: 'Status', key: 'status', sortable: true, width: '10%' },
-  { title: '', key: 'actions', sortable: false, width: '5%' }
+  { title: 'Uploader', key: 'owner', sortable: true, width: '15%' },
+  { title: 'Modified', key: 'modified', sortable: true, width: '9%' },
+  { title: 'Status', key: 'status', sortable: true, width: '7%' }
 ]
 
 const documentTypes = [
@@ -925,13 +1175,142 @@ const downloadDocument = (document) => {
 }
 
 const previewDocument = (document) => {
-  showSnackbar(`Opening preview for ${document.name}...`, 'info')
-  // Implement preview functionality
+  const fileName = getActualFileName(document)
+  if (fileName) {
+    previewFile(document, fileName)
+  } else {
+    showSnackbar(`No filename available for ${document.name}`, 'warning')
+  }
+}
+
+const previewFile = (document, fileName) => {
+  const fileUrl = `/api/documents/${document.id}/download`
+  const extension = getFileExtension(fileName).toLowerCase()
+  
+  console.log('Previewing file:', fileName, 'Extension:', extension)
+  
+  switch (extension) {
+    case 'pdf':
+      // PDFs open directly in browser
+      window.open(fileUrl, '_blank')
+      showSnackbar(`Opening PDF: ${fileName}`, 'info')
+      break
+      
+    case 'jpg':
+    case 'jpeg':
+    case 'png':
+    case 'gif':
+    case 'bmp':
+    case 'svg':
+    case 'webp':
+      // Images open directly in browser
+      window.open(fileUrl, '_blank')
+      showSnackbar(`Opening image: ${fileName}`, 'info')
+      break
+      
+    case 'doc':
+    case 'docx':
+      // Word documents - try Office Online or download
+      tryOfficeOnlineOrDownload(fileUrl, fileName, 'Word')
+      break
+      
+    case 'ppt':
+    case 'pptx':
+      // PowerPoint - try Office Online or download
+      tryOfficeOnlineOrDownload(fileUrl, fileName, 'PowerPoint')
+      break
+      
+    case 'xls':
+    case 'xlsx':
+      // Excel - try Office Online or download
+      tryOfficeOnlineOrDownload(fileUrl, fileName, 'Excel')
+      break
+      
+    case 'txt':
+    case 'md':
+    case 'csv':
+      // Text files open directly in browser
+      window.open(fileUrl, '_blank')
+      showSnackbar(`Opening text file: ${fileName}`, 'info')
+      break
+      
+    default:
+      // Unknown file type - offer download
+      console.log('Unknown file type, offering download')
+      showSnackbar(`Unknown file type. Downloading: ${fileName}`, 'info')
+      downloadDocument(document)
+  }
+}
+
+const tryOfficeOnlineOrDownload = (fileUrl, fileName, appType) => {
+  // For Office documents, we can try opening in Office Online or just download
+  // Office Online requires the file to be publicly accessible, which might not work
+  // So we'll show a dialog asking user preference
+  
+  if (confirm(`${appType} document: "${fileName}"\n\nClick OK to download and open locally, or Cancel to open in browser (may not display correctly)`)) {
+    // User chose to download
+    downloadFileDirectly(fileUrl, fileName)
+    showSnackbar(`Downloading ${appType} document: ${fileName}`, 'info')
+  } else {
+    // User chose to try browser view (likely won't work well but let them try)
+    window.open(fileUrl, '_blank')
+    showSnackbar(`Opening ${appType} document in browser: ${fileName}`, 'warning')
+  }
+}
+
+const downloadFileDirectly = (fileUrl, fileName) => {
+  // Create a temporary link to trigger download
+  const link = document.createElement('a')
+  link.href = fileUrl
+  link.download = fileName
+  link.style.display = 'none'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
+
+const previewPdf = (document) => {
+  // Legacy function - redirect to new preview logic
+  const fileName = getActualFileName(document)
+  if (fileName) {
+    previewFile(document, fileName)
+  }
 }
 
 const shareDocument = (document) => {
   showSnackbar(`Sharing ${document.name}...`, 'info')
   // Implement sharing functionality
+}
+
+const moveDocument = (document) => {
+  movingDocument.value = document
+  moveForm.value.directory_id = null
+  showMoveDialog.value = true
+}
+
+const confirmMoveDocument = async () => {
+  if (!movingDocument.value) return
+  
+  moving.value = true
+  try {
+    // Use documents store to update the document
+    await documentsStore.updateDocument(movingDocument.value.id, {
+      directory_id: moveForm.value.directory_id === 0 ? null : moveForm.value.directory_id,
+      name: movingDocument.value.name,
+      type: movingDocument.value.type,
+      purpose: movingDocument.value.purpose || '',
+      version: movingDocument.value.version || '1.0'
+    })
+    
+    showSnackbar(`Moved "${movingDocument.value.name}" successfully`, 'success')
+    showMoveDialog.value = false
+    
+  } catch (error) {
+    console.error('Failed to move document:', error)
+    showSnackbar('Failed to move document', 'error')
+  } finally {
+    moving.value = false
+  }
 }
 
 // Keyboard navigation
@@ -974,7 +1353,30 @@ const getRowProps = ({ item, index }) => {
     onClick: () => {
       selectedItemId.value = item.id
       keyboardSelectedIndex.value = index
+    },
+    onDblclick: () => {
+      handleDocumentDoubleClick(item)
     }
+  }
+}
+
+const handleDocumentClick = (item) => {
+  // Single click on title opens the document for preview
+  const fileName = getActualFileName(item)
+  if (fileName) {
+    previewFile(item, fileName)
+  } else {
+    downloadDocument(item)
+  }
+}
+
+const handleDocumentDoubleClick = (item) => {
+  // Double-click opens the document for preview
+  const fileName = getActualFileName(item)
+  if (fileName) {
+    previewFile(item, fileName)
+  } else {
+    downloadDocument(item)
   }
 }
 
@@ -1044,6 +1446,7 @@ const closeUploadDialog = () => {
   showUploadDialog.value = false
   uploadFiles.value = []
   uploadForm.value = {
+    title: '',
     directory_id: null,
     type: 'General_Doc',
     purpose: '',
@@ -1056,21 +1459,94 @@ const closeUploadDialog = () => {
 
 const uploadDocuments = async () => {
   try {
-    // Simulate upload for each file
-    for (const file of uploadFiles.value) {
-      showSnackbar(`Uploading ${file.name}...`, 'info')
-      // In a real app, you would upload the file here
+    const totalFiles = uploadFiles.value.length
+    let successCount = 0
+    let failedFiles = []
+    
+    for (let i = 0; i < totalFiles; i++) {
+      const file = uploadFiles.value[i]
+      
+      // Check file size (50MB limit)
+      const maxSizeBytes = 50 * 1024 * 1024 // 50MB in bytes
+      if (file.size > maxSizeBytes) {
+        failedFiles.push(file.name)
+        showSnackbar(`✗ ${file.name} is too large. Maximum size is 50MB.`, 'error')
+        continue
+      }
+      
+      // Show progress toast
+      showSnackbar(`Uploading ${file.name}... (${i + 1}/${totalFiles})`, 'info')
+      
+      // Create FormData for file upload
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('name', uploadForm.value.title || file.name.replace(/\.[^/.]+$/, '')) // Use title if provided, fallback to filename
+      formData.append('directory_id', uploadForm.value.directory_id || 0) // Default to root (0) if none selected
+      formData.append('type', uploadForm.value.type)
+      formData.append('purpose', uploadForm.value.purpose || `Upload of ${file.name}`)
+      formData.append('version', '1.0') // Default version
+      
+      // Add tags if any
+      if (uploadForm.value.tags && uploadForm.value.tags.length > 0) {
+        uploadForm.value.tags.forEach((tag, index) => {
+          formData.append(`tags[${index}]`, tag)
+        })
+      }
+      
+      try {
+        // Upload with axios directly to track progress
+        const response = await apiService.createDocument(formData)
+        
+        if (response.status === 201) {
+          successCount++
+          showSnackbar(`✓ ${file.name} uploaded successfully`, 'success')
+        }
+      } catch (error) {
+        console.error(`Failed to upload ${file.name}:`, error)
+        console.error('Response data:', error.response?.data)
+        console.error('Response status:', error.response?.status)
+        failedFiles.push(file.name)
+        
+        // Extract validation error message if available
+        let errorMessage = `✗ Failed to upload ${file.name}`
+        if (error.response?.data?.errors) {
+          console.error('Validation errors:', error.response.data.errors)
+          const firstError = Object.values(error.response.data.errors)[0]
+          errorMessage += `: ${Array.isArray(firstError) ? firstError[0] : firstError}`
+        } else if (error.response?.data?.message) {
+          errorMessage += `: ${error.response.data.message}`
+        }
+        
+        showSnackbar(errorMessage, 'error')
+      }
     }
     
-    showSnackbar(`Successfully uploaded ${uploadFiles.value.length} files`, 'success')
-    closeUploadDialog()
+    // Show final summary
+    if (successCount === totalFiles) {
+      showSnackbar(`All ${totalFiles} files uploaded successfully!`, 'success')
+    } else if (successCount > 0) {
+      showSnackbar(`Uploaded ${successCount}/${totalFiles} files. Failed: ${failedFiles.join(', ')}`, 'warning')
+    } else {
+      showSnackbar('All uploads failed. Please try again.', 'error')
+    }
     
-    // Refresh documents list
-    await fetchDocuments()
-  } catch (_error) {
+    if (successCount > 0) {
+      closeUploadDialog()
+      // Refresh documents list
+      await fetchDocuments()
+    }
+  } catch (error) {
+    console.error('Upload error:', error)
     showSnackbar('Failed to upload documents', 'error')
   }
 }
+
+// Utility function to get current directory ID from URL or default
+// const getCurrentDirectoryId = () => {
+//   // Since DocumentsView doesn't have a directory context, return null
+//   // The user will select the directory in the upload dialog
+//   return null
+// }
 
 onMounted(async () => {
   await Promise.all([
@@ -1111,6 +1587,12 @@ pre {
   border-radius: 4px;
   max-height: 200px;
   overflow-y: auto;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.v-theme--dark .metadata-pre {
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 /* Upload button styling */
@@ -1497,6 +1979,26 @@ pre {
 }
 
 /* Responsive adjustments */
+/* Item title hover styling */
+.item-title {
+  transition: all 0.2s ease;
+  text-decoration: none;
+  position: relative;
+}
+
+.item-title:hover {
+  color: rgb(25, 118, 210) !important;
+  text-decoration: underline;
+  text-decoration-color: rgb(25, 118, 210);
+  text-underline-offset: 2px;
+}
+
+.v-theme--dark .item-title:hover {
+  color: rgb(144, 202, 249) !important;
+  text-decoration-color: rgb(144, 202, 249);
+}
+
+
 @media (max-width: 960px) {
   .expanded-content {
     margin: 4px 0;
@@ -1513,5 +2015,33 @@ pre {
   .info-grid {
     grid-template-columns: 1fr;
   }
+}
+
+.square-pill {
+  border-radius: 4px !important;
+}
+
+/* Compact filename styling */
+.filename-compact {
+  font-size: 0.8rem !important;
+  line-height: 1.3 !important;
+  letter-spacing: -0.01em !important;
+  color: rgba(0, 0, 0, 0.8) !important;
+  word-break: break-all;
+}
+
+.v-theme--dark .filename-compact {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.filename-size {
+  color: rgba(0, 0, 0, 0.5) !important;
+  font-size: 0.75rem !important;
+  font-weight: normal !important;
+  margin-left: 4px;
+}
+
+.v-theme--dark .filename-size {
+  color: rgba(255, 255, 255, 0.5) !important;
 }
 </style>

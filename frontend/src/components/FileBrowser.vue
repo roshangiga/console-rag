@@ -135,10 +135,7 @@
             >
               <!-- Name column with icons and version -->
               <template #item.name="{ item }">
-                <div
-                  class="d-flex align-center cursor-pointer"
-                  @click="handleItemClick(item)"
-                >
+                <div class="d-flex align-center">
                   <v-icon
                     :color="getItemColor(item)"
                     class="mr-3"
@@ -146,7 +143,10 @@
                     {{ getItemIcon(item) }}
                   </v-icon>
                   <div>
-                    <div class="font-weight-medium">
+                    <div 
+                      class="font-weight-medium cursor-pointer item-title"
+                      @click="handleItemClick(item)"
+                    >
                       {{ item.name }}
                     </div>
                     <div
@@ -537,6 +537,18 @@
                                   </h4>
                                   <div class="action-buttons">
                                     <v-btn
+                                      v-if="item.type !== 'directory' && getFileName(item) && getFileName(item).toLowerCase().endsWith('.pdf')"
+                                      variant="outlined"
+                                      color="primary"
+                                      size="small"
+                                      class="mb-2 w-100"
+                                      @click="previewPdf(item)"
+                                    >
+                                      <v-icon size="16" class="mr-2">mdi-eye</v-icon>
+                                      Preview PDF
+                                    </v-btn>
+                                    
+                                    <v-btn
                                       v-if="item.type !== 'directory'"
                                       variant="outlined"
                                       color="primary"
@@ -639,6 +651,8 @@
         </v-card>
       </v-col>
     </v-row>
+
+    <!-- PDF Viewer removed - using browser's native viewer -->
   </v-container>
 </template>
 
@@ -663,6 +677,8 @@ const expanded = ref([])
 const selectedItemId = ref(null)
 const hoveredItemId = ref(null)
 const keyboardSelectedIndex = ref(0)
+
+// Remove PDF viewer state - using browser's native viewer now
 
 // Data
 const currentDirectory = ref(null)
@@ -752,8 +768,14 @@ const handleItemClick = (item) => {
   if (item.type === 'directory') {
     navigateToDirectory(item.originalId)
   } else {
-    // Handle document click (preview, download, etc.)
-    emit('download', item)
+    // Preview file using the new preview system
+    const fileName = getFileName(item)
+    if (fileName) {
+      previewFile(item, fileName)
+    } else {
+      // Fallback to download if no filename
+      emit('download', item)
+    }
   }
 }
 
@@ -875,10 +897,108 @@ const downloadDocument = (item) => {
 }
 
 const previewItem = (item) => {
-  // Emit preview event or handle preview logic
-  console.log('Preview item:', item)
-  // You can emit an event for parent component to handle
-  // emit('preview', item)
+  const fileName = getFileName(item)
+  if (fileName) {
+    previewFile(item, fileName)
+  } else {
+    console.log('No filename available for preview:', item)
+  }
+}
+
+const getFileExtension = (filename) => {
+  if (!filename) return ''
+  const parts = filename.split('.')
+  if (parts.length < 2) return ''
+  return parts.pop().toLowerCase()
+}
+
+const previewFile = (item, fileName) => {
+  const documentId = item.originalId || item.id
+  const fileUrl = `/api/documents/${documentId}/download`
+  const extension = getFileExtension(fileName).toLowerCase()
+  
+  console.log('Previewing file:', fileName, 'Extension:', extension)
+  
+  switch (extension) {
+    case 'pdf':
+      // PDFs open directly in browser
+      window.open(fileUrl, '_blank')
+      break
+      
+    case 'jpg':
+    case 'jpeg':
+    case 'png':
+    case 'gif':
+    case 'bmp':
+    case 'svg':
+    case 'webp':
+      // Images open directly in browser
+      window.open(fileUrl, '_blank')
+      break
+      
+    case 'doc':
+    case 'docx':
+      // Word documents - try Office Online or download
+      tryOfficeOnlineOrDownload(fileUrl, fileName, 'Word')
+      break
+      
+    case 'ppt':
+    case 'pptx':
+      // PowerPoint - try Office Online or download
+      tryOfficeOnlineOrDownload(fileUrl, fileName, 'PowerPoint')
+      break
+      
+    case 'xls':
+    case 'xlsx':
+      // Excel - try Office Online or download
+      tryOfficeOnlineOrDownload(fileUrl, fileName, 'Excel')
+      break
+      
+    case 'txt':
+    case 'md':
+    case 'csv':
+      // Text files open directly in browser
+      window.open(fileUrl, '_blank')
+      break
+      
+    default:
+      // Unknown file type - offer download
+      console.log('Unknown file type, offering download')
+      downloadDocument(item)
+  }
+}
+
+const tryOfficeOnlineOrDownload = (fileUrl, fileName, appType) => {
+  // For Office documents, we can try opening in Office Online or just download
+  // Office Online requires the file to be publicly accessible, which might not work
+  // So we'll show a dialog asking user preference
+  
+  if (confirm(`${appType} document: "${fileName}"\n\nClick OK to download and open locally, or Cancel to open in browser (may not display correctly)`)) {
+    // User chose to download
+    downloadFileDirectly(fileUrl, fileName)
+  } else {
+    // User chose to try browser view (likely won't work well but let them try)
+    window.open(fileUrl, '_blank')
+  }
+}
+
+const downloadFileDirectly = (fileUrl, fileName) => {
+  // Create a temporary link to trigger download
+  const link = document.createElement('a')
+  link.href = fileUrl
+  link.download = fileName
+  link.style.display = 'none'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
+
+const previewPdf = (item) => {
+  // Legacy function - redirect to new preview logic
+  const fileName = getFileName(item)
+  if (fileName) {
+    previewFile(item, fileName)
+  }
 }
 
 const shareItem = (item) => {
@@ -928,7 +1048,22 @@ const getRowProps = ({ item, index }) => {
     onClick: () => {
       selectedItemId.value = item.id
       keyboardSelectedIndex.value = index
-      handleItemClick(item)
+    },
+    onDblclick: () => {
+      handleItemDoubleClick(item)
+    }
+  }
+}
+
+const handleItemDoubleClick = (item) => {
+  if (item.type === 'directory') {
+    // Navigate to directory
+    navigateToDirectory(item.originalId)
+  } else {
+    // Preview file
+    const fileName = getFileName(item)
+    if (fileName) {
+      previewFile(item, fileName)
     }
   }
 }
@@ -1252,6 +1387,26 @@ watch(() => router.currentRoute.value.query.dir, (newDir) => {
 }
 
 /* Responsive adjustments */
+/* Item title hover styling */
+.item-title {
+  transition: all 0.2s ease;
+  text-decoration: none;
+  position: relative;
+}
+
+.item-title:hover {
+  color: rgb(25, 118, 210) !important;
+  text-decoration: underline;
+  text-decoration-color: rgb(25, 118, 210);
+  text-underline-offset: 2px;
+}
+
+.v-theme--dark .item-title:hover {
+  color: rgb(144, 202, 249) !important;
+  text-decoration-color: rgb(144, 202, 249);
+}
+
+
 @media (max-width: 960px) {
   .expanded-content {
     margin: 4px 0;

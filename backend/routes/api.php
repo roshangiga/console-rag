@@ -27,7 +27,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/documents/{id}', [DocumentController::class, 'update']);
     Route::delete('/documents/{id}', [DocumentController::class, 'destroy']);
     Route::post('/documents/{id}/process', [DocumentController::class, 'process']);
+    Route::get('/documents/{id}/download', [DocumentController::class, 'download']);
 
     // Tag routes
     Route::get('/tags', [TagController::class, 'index']);
 });
+
+// Temporary public route for testing PDF downloads
+Route::get('/documents/{id}/download', [DocumentController::class, 'download']);

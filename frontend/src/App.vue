@@ -246,9 +246,9 @@ const logout = async () => {
   try {
     await authStore.logout()
     router.push('/login')
-    showSnackbar('Logged out successfully')
-  } catch (_error) {
-    showSnackbar('Error during logout', 'error')
+  } catch (error) {
+    console.error('Logout failed:', error)
+    showSnackbar('Logout failed. Please try again.', 'error')
   }
 }
 

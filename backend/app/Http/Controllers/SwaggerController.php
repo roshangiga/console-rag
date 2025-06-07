@@ -10,8 +10,20 @@ use OpenApi\Attributes as OA;
     title: 'Console API Documentation',
     contact: new OA\Contact(
         name: 'Mauritius Telecom Innovation Team',
-        email: 'innovation@maurtiustelecom.mu'
+        email: 'innovation@telecom.mu'
     )
+)]
+#[OA\Tag(
+    name: 'Authentication',
+    description: 'User authentication and authorization endpoints'
+)]
+#[OA\Tag(
+    name: 'Directories',
+    description: 'Directory management and navigation endpoints'
+)]
+#[OA\Tag(
+    name: 'Documents',
+    description: 'Document management, upload, download, and processing endpoints'
 )]
 #[OA\Server(
     url: '/api',

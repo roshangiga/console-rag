@@ -105,19 +105,17 @@
               class="mr-3"
             />
           </template>
-          <div>
-            <v-skeleton-loader
-              type="text"
-              width="180"
-              height="16"
-            />
-            <v-skeleton-loader
-              type="text"
-              width="120"
-              height="14"
-              class="mt-1"
-            />
-          </div>
+          <v-skeleton-loader
+            type="text"
+            width="180"
+            height="16"
+            class="mb-1"
+          />
+          <v-skeleton-loader
+            type="text"
+            width="120"
+            height="14"
+          />
         </v-list-item>
       </v-list>
     </template>

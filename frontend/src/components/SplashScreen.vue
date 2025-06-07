@@ -82,7 +82,7 @@ const startLoadingAnimation = () => {
   messageInterval = setInterval(() => {
     messageIndex = (messageIndex + 1) % loadingMessages.length
     loadingText.value = loadingMessages[messageIndex]
-  }, 800)
+  }, 600)
 }
 
 const stopLoadingAnimation = () => {

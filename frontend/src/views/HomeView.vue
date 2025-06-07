@@ -2,14 +2,7 @@
   <v-container fluid>
     <v-row>
       <v-col cols="12">
-        <!-- Loading State for Stats -->
-        <SkeletonLoader
-          v-if="directoriesStore.loading || documentsStore.loading"
-          type="stats"
-        />
-        
-        <!-- Actual Stats -->
-        <v-row v-else>
+        <v-row>
           <v-col
             cols="12"
             md="6"
@@ -179,27 +172,64 @@
             cols="12"
             lg="4"
           >
+            <!-- Upload Document Button -->
+            <v-btn
+              color="primary"
+              variant="outlined"
+              block
+              size="default"
+              class="mb-4 upload-btn"
+              @click="handleUploadClick"
+            >
+              <v-icon start>
+                mdi-upload
+              </v-icon>
+              Upload Document
+            </v-btn>
+
             <!-- Recent Documents - Now in Sidebar -->
             <v-card
               class="sidebar-card mb-4"
               elevation="0"
             >
               <v-card-title class="d-flex align-center justify-space-between">
-                <span>Recent Documents</span>
-                <div
-                  v-if="!documentsStore.loading"
-                  class="text-caption text-medium-emphasis"
-                >
-                  {{ recentDocuments.length }} of {{ sortedDocuments.length }}
+                <div class="d-flex flex-column">
+                  <span>Recent Documents</span>
+                  <div
+                    v-if="!documentsStore.loading"
+                    class="text-caption text-medium-emphasis"
+                  >
+                    {{ recentDocuments.length }} of {{ sortedDocuments.length }}
+                  </div>
                 </div>
+                <v-btn
+                  color="primary"
+                  size="small"
+                  variant="outlined"
+                  to="/documents"
+                >
+                  <v-icon start>
+                    mdi-folder-open
+                  </v-icon>
+                  Manage Files
+                </v-btn>
               </v-card-title>
-              <v-card-text class="pt-0">
+              <v-card-text>
                 <!-- Loading state -->
-                <SkeletonLoader
+                <div
                   v-if="documentsStore.loading"
-                  type="list"
-                  :count="3"
-                />
+                  class="text-center py-4"
+                >
+                  <v-progress-circular
+                    indeterminate
+                    color="primary"
+                    size="32"
+                    class="mb-2"
+                  />
+                  <div class="text-body-2 text-medium-emphasis">
+                    Loading...
+                  </div>
+                </div>
                 
                 <!-- Documents list -->
                 <v-list
@@ -217,47 +247,48 @@
                         :color="getStatusColor(document.status)"
                         size="small"
                       >
-                        {{ getDocumentIcon(document.type) }}
+                        {{ getDocumentIcon(document.type, getActualFileName(document)) }}
                       </v-icon>
                     </template>
 
                     <v-list-item-title class="text-body-2">
-                      {{ document.name }}
+                      {{ getActualFileName(document) }}
                     </v-list-item-title>
                     <v-list-item-subtitle class="text-caption">
                       {{ getFormattedPath(document) }}
-                      <v-chip
-                        size="x-small"
-                        variant="outlined"
-                        color="primary"
-                        class="ml-1"
-                      >
-                        V{{ document.version }}
-                      </v-chip>
                     </v-list-item-subtitle>
 
                     <template #append>
-                      <v-chip
-                        :color="getStatusColor(document.status)"
-                        size="x-small"
-                        variant="dot"
-                      />
+                      <div class="d-flex align-center">
+                        <span class="text-caption text-medium-emphasis mr-2">
+                          {{ getTimeAgo(document.updated_at || document.created_at) }}
+                        </span>
+                        <v-chip
+                          :color="getStatusColor(document.status)"
+                          size="x-small"
+                          variant="dot"
+                        />
+                      </div>
                     </template>
                   </v-list-item>
                 </v-list>
                 
                 <!-- Empty state -->
-                <EmptyState
+                <div
                   v-else
-                  icon="mdi-file-document-outline"
-                  title="No documents yet"
-                  description="Upload your first document to get started"
-                  action-text="Upload Document"
-                  action-icon="mdi-upload"
-                  action-variant="tonal"
-                  action-size="small"
-                  @action="router.push('/documents')"
-                />
+                  class="text-center py-4"
+                >
+                  <v-icon
+                    size="32"
+                    color="grey-lighten-1"
+                    class="mb-1"
+                  >
+                    mdi-file-document-outline
+                  </v-icon>
+                  <div class="text-body-2 text-medium-emphasis">
+                    No documents
+                  </div>
+                </div>
 
                 <!-- Pagination for sidebar -->
                 <div
@@ -286,43 +317,6 @@
                 </div>
               </v-card-text>
             </v-card>
-
-            <!-- Quick Actions -->
-            <v-card
-              class="sidebar-card"
-              elevation="0"
-            >
-              <v-card-title>Quick Actions</v-card-title>
-              <v-card-text>
-                <v-btn
-                  color="primary"
-                  variant="flat"
-                  block
-                  class="mb-3 action-btn"
-                  to="/documents"
-                  elevation="0"
-                >
-                  <v-icon left>
-                    mdi-file-plus
-                  </v-icon>
-                  Upload Document
-                </v-btn>
-
-                <v-btn
-                  color="secondary"
-                  variant="tonal"
-                  block
-                  class="action-btn"
-                  to="/documents"
-                  elevation="0"
-                >
-                  <v-icon left>
-                    mdi-magnify
-                  </v-icon>
-                  Search Documents
-                </v-btn>
-              </v-card-text>
-            </v-card>
           </v-col>
         </v-row>
       </v-col>
@@ -336,8 +330,6 @@ import { useRouter } from 'vue-router'
 import { useDirectoriesStore } from '@/stores/directories'
 import { useDocumentsStore } from '@/stores/documents'
 import FileBrowser from '@/components/FileBrowser.vue'
-import SkeletonLoader from '@/components/SkeletonLoader.vue'
-import EmptyState from '@/components/EmptyState.vue'
 
 const router = useRouter()
 const directoriesStore = useDirectoriesStore()
@@ -346,7 +338,7 @@ const showSnackbar = inject('showSnackbar')
 
 // Pagination for recent documents
 const currentPage = ref(1)
-const itemsPerPage = 3
+const itemsPerPage = 5
 
 const sortedDocuments = computed(() => {
   return documentsStore.documents
@@ -363,6 +355,12 @@ const recentDocuments = computed(() => {
   const end = start + itemsPerPage
   return sortedDocuments.value.slice(start, end)
 })
+
+const _goToPage = (page) => {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page
+  }
+}
 
 const nextPage = () => {
   if (currentPage.value < totalPages.value) {
@@ -393,7 +391,38 @@ const getStatusColor = (status) => {
   }
 }
 
-const getDocumentIcon = (type) => {
+const getDocumentIcon = (type, filename = '') => {
+  // First check file extension for more specific icons
+  if (filename) {
+    const extension = getFileExtension(filename).toLowerCase()
+    switch (extension) {
+      case 'pdf': return 'mdi-file-document'
+      case 'doc':
+      case 'docx': return 'mdi-file-word-box'
+      case 'xls':
+      case 'xlsx': return 'mdi-file-excel-box'
+      case 'ppt':
+      case 'pptx': return 'mdi-file-powerpoint-box'
+      case 'txt': return 'mdi-file-document-outline'
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+      case 'gif':
+      case 'bmp':
+      case 'svg': return 'mdi-file-image'
+      case 'zip':
+      case 'rar':
+      case '7z': return 'mdi-zip-box'
+      case 'mp4':
+      case 'avi':
+      case 'mov': return 'mdi-file-video'
+      case 'mp3':
+      case 'wav':
+      case 'flac': return 'mdi-file-music'
+    }
+  }
+  
+  // Fall back to document type
   switch (type) {
     case 'QA': return 'mdi-help-circle'
     case 'Image': return 'mdi-image'
@@ -402,6 +431,37 @@ const getDocumentIcon = (type) => {
     case 'General_Doc': return 'mdi-file-document'
     default: return 'mdi-file'
   }
+}
+
+const getFileExtension = (filename) => {
+  if (!filename) return ''
+  const parts = filename.split('.')
+  if (parts.length < 2) return ''
+  return parts.pop().toLowerCase()
+}
+
+const _getExtensionFromType = (type) => {
+  switch (type) {
+    case 'QA': return 'pdf'
+    case 'Image': return 'png'
+    case 'Process_Chart': return 'pdf'
+    case 'Presentation': return 'pptx'
+    case 'General_Doc': return 'docx'
+    default: return 'file'
+  }
+}
+
+const getActualFileName = (item) => {
+  // Try to get filename from file_path first
+  if (item.file_path) {
+    const pathParts = item.file_path.split('/')
+    const filename = pathParts[pathParts.length - 1]
+    if (filename && filename !== '') {
+      return filename
+    }
+  }
+  // Fallback to name field
+  return item.name || 'Unknown File'
 }
 
 const getDocumentPath = (document) => {
@@ -417,10 +477,31 @@ const getFormattedPath = (document) => {
   return path.replace(/\//g, ' ➤ ').replace(/^ ➤ /, '')
 }
 
+const getTimeAgo = (dateString) => {
+  if (!dateString) return ''
+  
+  const now = new Date()
+  const date = new Date(dateString)
+  const diffInMs = now - date
+  const diffInMinutes = Math.floor(diffInMs / (1000 * 60))
+  const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60))
+  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24))
+  const diffInWeeks = Math.floor(diffInDays / 7)
+  const diffInMonths = Math.floor(diffInDays / 30)
+  const diffInYears = Math.floor(diffInDays / 365)
+  
+  if (diffInMinutes < 1) return 'just now'
+  if (diffInMinutes < 60) return `${diffInMinutes}m ago`
+  if (diffInHours < 24) return `${diffInHours}h ago`
+  if (diffInDays < 7) return `${diffInDays}d ago`
+  if (diffInWeeks < 4) return `${diffInWeeks}w ago`
+  if (diffInMonths < 12) return `${diffInMonths}mo ago`
+  return `${diffInYears}y ago`
+}
+
 // FileBrowser event handlers
 const handleUpload = () => {
-  // Redirect to full browser with upload intent
-  router.push('/browse?action=upload')
+  showSnackbar('Upload functionality - use the full browser for complete features', 'info')
 }
 
 const handleEdit = (item) => {
@@ -439,6 +520,11 @@ const handleDownload = (item) => {
 const handleCreateFolder = () => {
   // Redirect to full browser with create folder intent
   router.push('/browse?action=create-folder')
+}
+
+const handleUploadClick = () => {
+  // Navigate to documents page with upload action
+  router.push('/documents?action=upload')
 }
 
 onMounted(async () => {
@@ -467,20 +553,6 @@ onMounted(async () => {
   border: 1px solid rgba(0, 0, 0, 0.05);
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   background: rgba(255, 255, 255, 0.95);
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-}
-
-.stat-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-  transition: left 0.5s ease;
 }
 
 .v-theme--dark .stat-card {
@@ -488,23 +560,13 @@ onMounted(async () => {
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.v-theme--dark .stat-card::before {
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-}
-
 .stat-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 20px -10px rgba(0, 0, 0, 0.15);
-  border-color: rgba(0, 0, 0, 0.1);
-}
-
-.stat-card:hover::before {
-  left: 100%;
 }
 
 .v-theme--dark .stat-card:hover {
   box-shadow: 0 12px 20px -10px rgba(0, 0, 0, 0.5);
-  border-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Icon wrappers for stats */
@@ -615,6 +677,18 @@ onMounted(async () => {
   font-weight: 500;
 }
 
+/* Upload button styling */
+.upload-btn {
+  text-transform: none;
+  font-weight: 500;
+  letter-spacing: 0.25px;
+  transition: all 0.2s ease;
+}
+
+.upload-btn:hover {
+  background-color: rgba(25, 118, 210, 0.04);
+}
+
 /* Loading state improvements */
 .v-progress-circular {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
@@ -627,5 +701,27 @@ onMounted(async () => {
   50% {
     opacity: 0.5;
   }
+}
+
+/* File extension styling for recent documents */
+.file-extension-small {
+  font-size: 7px !important;
+  line-height: 1.2 !important;
+  margin-top: 2px !important;
+  font-weight: 500 !important;
+  text-transform: uppercase !important;
+  color: rgba(0, 0, 0, 0.6) !important;
+  background-color: rgba(0, 0, 0, 0.08) !important;
+  padding: 1px 2px !important;
+  border-radius: 2px !important;
+  min-width: 18px !important;
+  text-align: center !important;
+  display: block !important;
+  border: none !important;
+}
+
+.v-theme--dark .file-extension-small {
+  color: rgba(255, 255, 255, 0.7) !important;
+  background-color: rgba(255, 255, 255, 0.12) !important;
 }
 </style>

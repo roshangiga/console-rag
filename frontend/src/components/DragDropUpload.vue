@@ -7,9 +7,9 @@
     @dragleave.prevent="handleDragLeave"
   >
     <!-- Upload Icon -->
-    <div class="upload-icon mb-4">
+    <div class="upload-icon mb-3">
       <v-icon
-        :size="80"
+        :size="64"
         :color="isDragging ? 'primary' : 'grey-lighten-1'"
         class="upload-icon-animated"
       >
@@ -49,7 +49,7 @@
 
     <!-- File Type Info -->
     <p class="text-caption text-medium-emphasis mt-4">
-      {{ acceptText || 'Supported formats: PDF, DOCX, XLSX, PPTX, Images' }}
+      {{ acceptText || 'Supported formats: PDF, DOCX, XLSX, PPTX, Images, TXT' }}
     </p>
 
     <!-- Selected Files Preview -->
@@ -112,7 +112,7 @@ const props = defineProps({
   },
   accept: {
     type: String,
-    default: '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif'
+    default: '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.txt'
   },
   acceptText: {
     type: String,
@@ -213,6 +213,7 @@ const getFileIcon = (file) => {
     case 'jpeg':
     case 'png':
     case 'gif': return 'mdi-file-image'
+    case 'txt': return 'mdi-file-document-outline'
     default: return 'mdi-file'
   }
 }
@@ -231,6 +232,7 @@ const getFileIconColor = (file) => {
     case 'jpeg':
     case 'png':
     case 'gif': return 'purple'
+    case 'txt': return 'teal'
     default: return 'grey'
   }
 }
@@ -247,7 +249,7 @@ defineExpose({
 .drag-drop-zone {
   border: 2px dashed rgba(0, 0, 0, 0.2);
   border-radius: 8px;
-  padding: 48px 24px;
+  padding: 32px 24px;
   text-align: center;
   transition: all 0.3s ease;
   background-color: rgba(0, 0, 0, 0.02);
