@@ -2,37 +2,37 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Directory;
+use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
 class DirectoryController extends Controller
 {
     #[OA\Get(
-        path: "/directories",
-        summary: "Get directory tree",
-        description: "Retrieve hierarchical directory structure with nested children",
-        security: [["bearerAuth" => []]],
-        tags: ["Directories"],
+        path: '/directories',
+        summary: 'Get directory tree',
+        description: 'Retrieve hierarchical directory structure with nested children',
+        security: [['bearerAuth' => []]],
+        tags: ['Directories'],
         responses: [
             new OA\Response(
                 response: 200,
-                description: "Directory tree retrieved successfully",
+                description: 'Directory tree retrieved successfully',
                 content: new OA\JsonContent(
-                    type: "array",
+                    type: 'array',
                     items: new OA\Items(
                         properties: [
-                            new OA\Property(property: "id", type: "integer"),
-                            new OA\Property(property: "name", type: "string"),
-                            new OA\Property(property: "parent_id", type: "integer", nullable: true),
-                            new OA\Property(property: "created_by", type: "integer"),
-                            new OA\Property(property: "children", type: "array", items: new OA\Items(type: "object")),
-                            new OA\Property(property: "creator", type: "object"),
-                            new OA\Property(property: "documents", type: "array", items: new OA\Items(type: "object"))
+                            new OA\Property(property: 'id', type: 'integer'),
+                            new OA\Property(property: 'name', type: 'string'),
+                            new OA\Property(property: 'parent_id', type: 'integer', nullable: true),
+                            new OA\Property(property: 'created_by', type: 'integer'),
+                            new OA\Property(property: 'children', type: 'array', items: new OA\Items(type: 'object')),
+                            new OA\Property(property: 'creator', type: 'object'),
+                            new OA\Property(property: 'documents', type: 'array', items: new OA\Items(type: 'object')),
                         ]
                     )
                 )
-            )
+            ),
         ]
     )]
     public function index()
@@ -77,19 +77,19 @@ class DirectoryController extends Controller
     }
 
     #[OA\Get(
-        path: "/directories/{id}/contents",
-        summary: "Get directory contents",
-        description: "Get detailed contents of a specific directory including subdirectories and documents",
-        security: [["bearerAuth" => []]],
-        tags: ["Directories"],
+        path: '/directories/{id}/contents',
+        summary: 'Get directory contents',
+        description: 'Get detailed contents of a specific directory including subdirectories and documents',
+        security: [['bearerAuth' => []]],
+        tags: ['Directories'],
         parameters: [
             new OA\Parameter(
-                name: "id",
-                description: "Directory ID (use 0 for root)",
-                in: "path",
+                name: 'id',
+                description: 'Directory ID (use 0 for root)',
+                in: 'path',
                 required: true,
-                schema: new OA\Schema(type: "integer")
-            )
+                schema: new OA\Schema(type: 'integer')
+            ),
         ]
     )]
     public function getContents($id)
@@ -105,17 +105,17 @@ class DirectoryController extends Controller
             $breadcrumbs = [['id' => 0, 'name' => 'Root', 'path' => '/']];
         } else {
             $currentDirectory = Directory::with(['creator', 'parent'])->findOrFail($id);
-            
+
             $directories = Directory::with(['creator'])
                 ->where('parent_id', $id)
                 ->orderBy('name')
                 ->get();
-                
+
             $documents = $currentDirectory->documents()
                 ->with(['creator', 'tags'])
                 ->orderBy('name')
                 ->get();
-                
+
             // Build breadcrumbs
             $breadcrumbs = $this->buildBreadcrumbs($currentDirectory);
         }
@@ -127,6 +127,7 @@ class DirectoryController extends Controller
             $dir->subdirectory_count = $subDirCount;
             $dir->document_count = $docCount;
             $dir->total_count = $subDirCount + $docCount;
+
             return $dir;
         });
 
@@ -138,8 +139,8 @@ class DirectoryController extends Controller
             'stats' => [
                 'directory_count' => $directories->count(),
                 'document_count' => $documents->count(),
-                'total_count' => $directories->count() + $documents->count()
-            ]
+                'total_count' => $directories->count() + $documents->count(),
+            ],
         ]);
     }
 
@@ -155,23 +156,23 @@ class DirectoryController extends Controller
     {
         $breadcrumbs = [];
         $current = $directory;
-        
+
         while ($current) {
             array_unshift($breadcrumbs, [
                 'id' => $current->id,
                 'name' => $current->name,
-                'path' => '/' . collect($breadcrumbs)->pluck('name')->prepend($current->name)->implode('/')
+                'path' => '/'.collect($breadcrumbs)->pluck('name')->prepend($current->name)->implode('/'),
             ]);
             $current = $current->parent;
         }
-        
+
         // Add root at the beginning
         array_unshift($breadcrumbs, [
             'id' => 0,
             'name' => 'Root',
-            'path' => '/'
+            'path' => '/',
         ]);
-        
+
         return $breadcrumbs;
     }
 

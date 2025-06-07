@@ -2,53 +2,52 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
-use App\Models\User;
 use OpenApi\Attributes as OA;
 
 class AuthController extends Controller
 {
     #[OA\Post(
-        path: "/auth/login",
-        summary: "User login",
-        description: "Authenticate user and return JWT token",
-        tags: ["Authentication"],
+        path: '/auth/login',
+        description: 'Authenticate user and return JWT token',
+        summary: 'User login',
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(
-                required: ["email", "password"],
+                required: ['email', 'password'],
                 properties: [
-                    new OA\Property(property: "email", type: "string", format: "email", example: "admin@telecom.mu"),
-                    new OA\Property(property: "password", type: "string", format: "password", example: "password")
+                    new OA\Property(property: 'email', type: 'string', format: 'email', example: 'admin@telecom.mu'),
+                    new OA\Property(property: 'password', type: 'string', format: 'password', example: 'password'),
                 ]
             )
         ),
+        tags: ['Authentication'],
         responses: [
             new OA\Response(
                 response: 200,
-                description: "Successful login",
+                description: 'Successful login',
                 content: new OA\JsonContent(
                     properties: [
-                        new OA\Property(property: "access_token", type: "string"),
-                        new OA\Property(property: "token_type", type: "string", example: "Bearer"),
+                        new OA\Property(property: 'access_token', type: 'string'),
+                        new OA\Property(property: 'token_type', type: 'string', example: 'Bearer'),
                         new OA\Property(
-                            property: "user",
-                            type: "object",
+                            property: 'user',
                             properties: [
-                                new OA\Property(property: "id", type: "integer"),
-                                new OA\Property(property: "name", type: "string"),
-                                new OA\Property(property: "email", type: "string"),
-                                new OA\Property(property: "entra_id", type: "string", nullable: true)
-                            ]
-                        )
+                                new OA\Property(property: 'id', type: 'integer'),
+                                new OA\Property(property: 'name', type: 'string'),
+                                new OA\Property(property: 'email', type: 'string'),
+                                new OA\Property(property: 'entra_id', type: 'string', nullable: true),
+                            ],
+                            type: 'object'
+                        ),
                     ]
                 )
             ),
-            new OA\Response(response: 422, description: "Validation error"),
-            new OA\Response(response: 401, description: "Invalid credentials")
+            new OA\Response(response: 422, description: 'Validation error'),
+            new OA\Response(response: 401, description: 'Invalid credentials'),
         ]
     )]
     public function login(Request $request)
@@ -60,7 +59,7 @@ class AuthController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        if (! $user || ! Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
                 'email' => ['The provided credentials are incorrect.'],
             ]);
@@ -76,21 +75,21 @@ class AuthController extends Controller
     }
 
     #[OA\Post(
-        path: "/auth/logout",
-        summary: "User logout",
-        description: "Logout user and invalidate token",
-        security: [["bearerAuth" => []]],
-        tags: ["Authentication"],
+        path: '/auth/logout',
+        description: 'Logout user and invalidate token',
+        summary: 'User logout',
+        security: [['bearerAuth' => []]],
+        tags: ['Authentication'],
         responses: [
             new OA\Response(
                 response: 200,
-                description: "Successful logout",
+                description: 'Successful logout',
                 content: new OA\JsonContent(
                     properties: [
-                        new OA\Property(property: "message", type: "string", example: "Logged out successfully")
+                        new OA\Property(property: 'message', type: 'string', example: 'Logged out successfully'),
                     ]
                 )
-            )
+            ),
         ]
     )]
     public function logout(Request $request)

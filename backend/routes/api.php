@@ -1,10 +1,10 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DirectoryController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\TagController;
+use Illuminate\Support\Facades\Route;
 
 // Authentication routes
 Route::post('/auth/login', [AuthController::class, 'login']);

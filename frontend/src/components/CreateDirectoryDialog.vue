@@ -1,5 +1,9 @@
 <template>
-  <v-dialog :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)" max-width="500">
+  <v-dialog
+    :model-value="modelValue"
+    max-width="500"
+    @update:model-value="$emit('update:modelValue', $event)"
+  >
     <v-card>
       <v-card-title>Create New Directory</v-card-title>
       
@@ -98,7 +102,7 @@ const handleSubmit = async () => {
     emit('created')
     emit('update:modelValue', false)
     resetForm()
-  } catch (error) {
+  } catch (_error) {
     showSnackbar('Failed to create directory', 'error')
   } finally {
     loading.value = false

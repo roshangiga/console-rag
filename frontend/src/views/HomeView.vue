@@ -2,7 +2,6 @@
   <v-container fluid>
     <v-row>
       <v-col cols="12">
-        
         <v-row>
           <v-col
             cols="12"
@@ -205,7 +204,10 @@
                 </div>
                 
                 <!-- Documents list -->
-                <v-list v-else-if="recentDocuments.length > 0" density="compact">
+                <v-list
+                  v-else-if="recentDocuments.length > 0"
+                  density="compact"
+                >
                   <v-list-item
                     v-for="document in recentDocuments"
                     :key="document.id"
@@ -221,7 +223,9 @@
                       </v-icon>
                     </template>
 
-                    <v-list-item-title class="text-body-2">{{ document.name }}</v-list-item-title>
+                    <v-list-item-title class="text-body-2">
+                      {{ document.name }}
+                    </v-list-item-title>
                     <v-list-item-subtitle class="text-caption">
                       {{ getFormattedPath(document) }}
                       <v-chip
@@ -364,12 +368,6 @@ const recentDocuments = computed(() => {
   return sortedDocuments.value.slice(start, end)
 })
 
-const goToPage = (page) => {
-  if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page
-  }
-}
-
 const nextPage = () => {
   if (currentPage.value < totalPages.value) {
     currentPage.value++
@@ -423,11 +421,10 @@ const getFormattedPath = (document) => {
   return path.replace(/\//g, ' ➤ ').replace(/^ ➤ /, '')
 }
 
-
-
 // FileBrowser event handlers
 const handleUpload = () => {
-  showSnackbar('Upload functionality - use the full browser for complete features', 'info')
+  // Redirect to full browser with upload intent
+  router.push('/browse?action=upload')
 }
 
 const handleEdit = (item) => {

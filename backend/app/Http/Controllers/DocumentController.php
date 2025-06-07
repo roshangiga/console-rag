@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Document;
 use App\Models\DocumentTag;
+use Illuminate\Http\Request;
 
 class DocumentController extends Controller
 {
@@ -25,7 +25,7 @@ class DocumentController extends Controller
         }
 
         if ($request->has('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+            $query->where('name', 'like', '%'.$request->search.'%');
         }
 
         $documents = $query->orderBy('created_at', 'desc')->get();
@@ -58,7 +58,7 @@ class DocumentController extends Controller
         ]);
 
         // Dummy file handling - just store the file name
-        $filePath = 'dummy/path/' . $request->file('file')->getClientOriginalName();
+        $filePath = 'dummy/path/'.$request->file('file')->getClientOriginalName();
 
         $document = Document::create([
             'name' => $request->name,
@@ -88,6 +88,7 @@ class DocumentController extends Controller
     public function show($id)
     {
         $document = Document::with(['directory', 'creator', 'tags'])->findOrFail($id);
+
         return response()->json($document);
     }
 
@@ -106,7 +107,7 @@ class DocumentController extends Controller
 
         $document = Document::findOrFail($id);
         $document->update($request->only([
-            'name', 'directory_id', 'version', 'type', 'purpose', 'metadata'
+            'name', 'directory_id', 'version', 'type', 'purpose', 'metadata',
         ]));
 
         // Update tags
@@ -134,18 +135,18 @@ class DocumentController extends Controller
     public function process(Request $request, $id)
     {
         $document = Document::findOrFail($id);
-        
+
         // Simulate processing delay and random status
         sleep(1);
         $statuses = ['SUCCESS', 'FAILED', 'UPDATING'];
         $randomStatus = $statuses[array_rand($statuses)];
-        
+
         $document->update(['status' => $randomStatus]);
 
         return response()->json([
             'message' => 'Document processing initiated',
             'status' => $randomStatus,
-            'document' => $document->load(['directory', 'creator', 'tags'])
+            'document' => $document->load(['directory', 'creator', 'tags']),
         ]);
     }
 }

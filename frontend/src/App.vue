@@ -9,7 +9,7 @@
       app
       :temporary="$vuetify.display.mobile"
       :permanent="!$vuetify.display.mobile"
-      width="280"
+      width="320"
       class="elegant-drawer"
     >
       <DirectoryTree />
@@ -28,7 +28,7 @@
         style="cursor: pointer"
         @click="router.push('/')"
       >
-        Console
+        Console_
       </v-toolbar-title>
 
       <v-spacer />

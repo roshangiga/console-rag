@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DocumentSeeder extends Seeder
@@ -23,7 +22,7 @@ class DocumentSeeder extends Seeder
                 'metadata' => ['author' => 'Innovation Team', 'confidentiality' => 'internal'],
                 'status' => 'SUCCESS',
                 'created_by' => 1,
-                'tags' => ['Internal', 'Enterprise']
+                'tags' => ['Internal', 'Enterprise'],
             ],
             [
                 'name' => 'API Endpoints Documentation',
@@ -35,7 +34,7 @@ class DocumentSeeder extends Seeder
                 'metadata' => ['format' => 'OpenAPI 3.0', 'last_updated' => '2025-06-01'],
                 'status' => 'SUCCESS',
                 'created_by' => 2,
-                'tags' => ['Internal']
+                'tags' => ['Internal'],
             ],
             [
                 'name' => 'User Interface Mockups',
@@ -47,7 +46,7 @@ class DocumentSeeder extends Seeder
                 'metadata' => ['designer' => 'UX Team', 'tool' => 'Figma'],
                 'status' => 'UPDATING',
                 'created_by' => 3,
-                'tags' => ['Internal']
+                'tags' => ['Internal'],
             ],
             [
                 'name' => 'QA Testing Checklist',
@@ -59,7 +58,7 @@ class DocumentSeeder extends Seeder
                 'metadata' => ['template_version' => '3.0', 'coverage' => 'full'],
                 'status' => 'SUCCESS',
                 'created_by' => 2,
-                'tags' => ['Internal', 'Enterprise']
+                'tags' => ['Internal', 'Enterprise'],
             ],
             [
                 'name' => 'Development Workflow Chart',
@@ -71,7 +70,7 @@ class DocumentSeeder extends Seeder
                 'metadata' => ['chart_type' => 'flowchart', 'last_review' => '2025-05-15'],
                 'status' => 'SUCCESS',
                 'created_by' => 1,
-                'tags' => ['Public']
+                'tags' => ['Public'],
             ],
             [
                 'name' => 'Employee Onboarding Guide',
@@ -83,7 +82,7 @@ class DocumentSeeder extends Seeder
                 'metadata' => ['department' => 'HR', 'validity' => '1 year'],
                 'status' => 'SUCCESS',
                 'created_by' => 1,
-                'tags' => ['Public']
+                'tags' => ['Public'],
             ],
             [
                 'name' => 'AI Research Findings',
@@ -95,7 +94,7 @@ class DocumentSeeder extends Seeder
                 'metadata' => ['research_period' => 'Q1 2025', 'status' => 'preliminary'],
                 'status' => 'FAILED',
                 'created_by' => 2,
-                'tags' => ['Internal']
+                'tags' => ['Internal'],
             ],
             [
                 'name' => 'Mobile App Screenshots',
@@ -107,7 +106,7 @@ class DocumentSeeder extends Seeder
                 'metadata' => ['platform' => 'iOS/Android', 'resolution' => '1080p'],
                 'status' => 'SUCCESS',
                 'created_by' => 3,
-                'tags' => ['Public']
+                'tags' => ['Public'],
             ],
             [
                 'name' => 'System Architecture Diagram',
@@ -119,7 +118,7 @@ class DocumentSeeder extends Seeder
                 'metadata' => ['diagram_tool' => 'Draw.io', 'complexity' => 'high'],
                 'status' => 'UPDATING',
                 'created_by' => 1,
-                'tags' => ['Internal', 'Enterprise']
+                'tags' => ['Internal', 'Enterprise'],
             ],
             [
                 'name' => 'Technical Training Materials',
@@ -131,7 +130,7 @@ class DocumentSeeder extends Seeder
                 'metadata' => ['format' => 'mixed', 'duration' => '40 hours'],
                 'status' => 'SUCCESS',
                 'created_by' => 3,
-                'tags' => ['Internal']
+                'tags' => ['Internal'],
             ],
             [
                 'name' => 'Document Processing Logic',
@@ -143,7 +142,7 @@ class DocumentSeeder extends Seeder
                 'metadata' => ['pipeline_stages' => 5, 'performance' => 'optimized'],
                 'status' => 'SUCCESS',
                 'created_by' => 2,
-                'tags' => ['Internal']
+                'tags' => ['Internal'],
             ],
             [
                 'name' => 'Quality Metrics Report',
@@ -155,7 +154,7 @@ class DocumentSeeder extends Seeder
                 'metadata' => ['reporting_period' => 'May 2025', 'kpis' => 12],
                 'status' => 'SUCCESS',
                 'created_by' => 2,
-                'tags' => ['Enterprise']
+                'tags' => ['Enterprise'],
             ],
             [
                 'name' => 'GraphQL Schema Documentation',
@@ -167,7 +166,7 @@ class DocumentSeeder extends Seeder
                 'metadata' => ['schema_version' => '1.3', 'endpoints' => 25],
                 'status' => 'UPDATING',
                 'created_by' => 1,
-                'tags' => ['Internal']
+                'tags' => ['Internal'],
             ],
             [
                 'name' => 'Innovation Strategy Presentation',
@@ -179,7 +178,7 @@ class DocumentSeeder extends Seeder
                 'metadata' => ['board_approved' => true, 'fiscal_year' => '2025'],
                 'status' => 'SUCCESS',
                 'created_by' => 1,
-                'tags' => ['Enterprise']
+                'tags' => ['Enterprise'],
             ],
             [
                 'name' => 'Bug Tracking QA Process',
@@ -191,8 +190,8 @@ class DocumentSeeder extends Seeder
                 'metadata' => ['tool' => 'Jira', 'severity_levels' => 4],
                 'status' => 'FAILED',
                 'created_by' => 3,
-                'tags' => ['Internal']
-            ]
+                'tags' => ['Internal'],
+            ],
         ];
 
         foreach ($documents as $docData) {

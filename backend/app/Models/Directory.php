@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Directory extends Model
 {
@@ -39,12 +39,12 @@ class Directory extends Model
     {
         $path = collect();
         $current = $this;
-        
+
         while ($current) {
             $path->prepend($current->name);
             $current = $current->parent;
         }
-        
-        return $path->count() > 0 ? '/' . $path->implode('/') : '/';
+
+        return $path->count() > 0 ? '/'.$path->implode('/') : '/';
     }
 }

@@ -51,7 +51,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['update:modelValue'])
+const _emit = defineEmits(['update:modelValue'])
 
 const show = ref(props.modelValue)
 const loadingText = ref('Initializing...')

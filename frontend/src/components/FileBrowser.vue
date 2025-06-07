@@ -2,15 +2,18 @@
   <v-container fluid>
     <!-- Header with stats and view controls -->
     <v-row class="mb-4">
-      <v-col cols="12" md="8">
+      <v-col
+        cols="12"
+        md="8"
+      >
         <div class="d-flex align-center">
           <v-btn
             icon="mdi-arrow-up"
             variant="text"
             size="small"
             :disabled="!canNavigateUp"
-            @click="navigateUp"
             class="mr-2"
+            @click="navigateUp"
           />
           <div>
             <h2 class="text-h5 font-weight-bold">
@@ -23,44 +26,92 @@
           </div>
         </div>
       </v-col>
-      <v-col cols="12" md="4" class="text-right">
-        <v-btn-toggle v-model="viewMode" mandatory class="mr-2">
-          <v-btn value="list" icon="mdi-view-list" size="small" />
-          <v-btn value="grid" icon="mdi-view-grid" size="small" />
-        </v-btn-toggle>
-        <v-btn
-          color="secondary"
-          prepend-icon="mdi-folder-plus"
+      <v-col
+        cols="12"
+        md="4"
+        class="text-right"
+      >
+        <v-btn-toggle
+          v-model="viewMode"
+          mandatory
           class="mr-2"
-          @click="$emit('createFolder')"
         >
-          New Folder
-        </v-btn>
-        <v-btn
-          color="primary"
-          prepend-icon="mdi-upload"
-          @click="$emit('upload')"
+          <v-btn
+            value="list"
+            icon="mdi-view-list"
+            size="small"
+          />
+          <v-btn
+            value="grid"
+            icon="mdi-view-grid"
+            size="small"
+          />
+        </v-btn-toggle>
+        <v-tooltip
+          text="Create New Folder"
+          location="bottom"
         >
-          Upload
-        </v-btn>
+          <template #activator="{ props: activatorProps }">
+            <v-btn
+              v-bind="activatorProps"
+              icon="mdi-folder-plus"
+              variant="text"
+              size="small"
+              color="secondary"
+              class="mr-2"
+              @click="$emit('createFolder')"
+            />
+          </template>
+        </v-tooltip>
+        
+        <v-tooltip
+          text="Upload Files"
+          location="bottom"
+        >
+          <template #activator="{ props: activatorProps }">
+            <v-btn
+              v-bind="activatorProps"
+              icon="mdi-upload"
+              variant="text"
+              size="small"
+              color="primary"
+              @click="$emit('upload')"
+            />
+          </template>
+        </v-tooltip>
       </v-col>
     </v-row>
 
     <!-- Breadcrumbs -->
     <v-row class="mb-4">
       <v-col cols="12">
-        <v-breadcrumbs :items="breadcrumbItems" class="pa-0">
-          <template v-slot:item="{ item }">
+        <v-breadcrumbs
+          :items="breadcrumbItems"
+          class="pa-0"
+        >
+          <template #item="{ item }">
             <v-breadcrumbs-item
               :disabled="item.disabled"
               :class="{ 'breadcrumb-clickable': !item.disabled }"
               @click="navigateToDirectory(item.value)"
             >
-              <v-icon v-if="item.value === 0" size="small" class="mr-1">
+              <v-icon
+                v-if="item.value === 0"
+                size="small"
+                class="mr-1"
+              >
                 mdi-home
               </v-icon>
               {{ item.title }}
             </v-breadcrumbs-item>
+          </template>
+          <template #divider>
+            <v-icon
+              size="small"
+              color="grey-lighten-1"
+            >
+              mdi-chevron-right
+            </v-icon>
           </template>
         </v-breadcrumbs>
       </v-col>
@@ -81,23 +132,53 @@
               show-expand
               :expanded="expanded"
             >
-              <!-- Name column with icons -->
-              <template v-slot:item.name="{ item }">
-                <div class="d-flex align-center cursor-pointer" @click="handleItemClick(item)">
-                  <v-icon :color="getItemColor(item)" class="mr-3">
+              <!-- Name column with icons and version -->
+              <template #item.name="{ item }">
+                <div
+                  class="d-flex align-center cursor-pointer"
+                  @click="handleItemClick(item)"
+                >
+                  <v-icon
+                    :color="getItemColor(item)"
+                    class="mr-3"
+                  >
                     {{ getItemIcon(item) }}
                   </v-icon>
                   <div>
-                    <div class="font-weight-medium">{{ item.name }}</div>
-                    <div v-if="item.type === 'directory'" class="text-caption text-medium-emphasis">
+                    <div class="font-weight-medium">
+                      {{ item.name }}
+                    </div>
+                    <div
+                      v-if="item.type === 'directory'"
+                      class="text-caption text-medium-emphasis"
+                    >
                       {{ item.total_count }} items
+                    </div>
+                    <div
+                      v-if="item.type !== 'directory'"
+                      class="d-flex align-center mt-1"
+                    >
+                      <span
+                        v-if="getFileName(item)"
+                        class="text-caption text-medium-emphasis mr-2"
+                      >
+                        {{ getFileName(item) }}
+                      </span>
+                      <v-chip
+                        v-if="item.version"
+                        size="x-small"
+                        variant="outlined"
+                        color="primary"
+                      >
+                        V {{ item.version }}
+                      </v-chip>
                     </div>
                   </div>
                 </div>
               </template>
 
               <!-- Type column -->
-              <template v-slot:item.type="{ item }">
+              <template #item.type="{ item }">
                 <v-chip
                   :color="getTypeColor(item.type)"
                   size="small"
@@ -108,7 +189,7 @@
               </template>
 
               <!-- Size/Count column -->
-              <template v-slot:item.size="{ item }">
+              <template #item.size="{ item }">
                 <span v-if="item.type === 'directory'">
                   {{ item.subdirectory_count }} folders, {{ item.document_count }} files
                 </span>
@@ -118,17 +199,22 @@
               </template>
 
               <!-- Owner column -->
-              <template v-slot:item.owner="{ item }">
+              <template #item.owner="{ item }">
                 <div class="d-flex align-center">
-                  <v-avatar size="24" class="mr-2">
-                    <v-icon size="16">mdi-account</v-icon>
+                  <v-avatar
+                    size="24"
+                    class="mr-2"
+                  >
+                    <v-icon size="16">
+                      mdi-account
+                    </v-icon>
                   </v-avatar>
                   <span>{{ item.creator?.name || 'Unknown' }}</span>
                 </div>
               </template>
 
               <!-- Date modified -->
-              <template v-slot:item.modified="{ item }">
+              <template #item.modified="{ item }">
                 <div>
                   <div>{{ formatDate(item.updated_at || item.created_at) }}</div>
                   <div class="text-caption text-medium-emphasis">
@@ -138,7 +224,7 @@
               </template>
 
               <!-- Status for documents -->
-              <template v-slot:item.status="{ item }">
+              <template #item.status="{ item }">
                 <v-chip
                   v-if="item.type !== 'directory'"
                   :color="getStatusColor(item.status)"
@@ -151,38 +237,55 @@
               </template>
 
               <!-- Actions -->
-              <template v-slot:item.actions="{ item }">
+              <template #item.actions="{ item }">
                 <v-menu>
-                  <template v-slot:activator="{ props }">
+                  <template #activator="{ props: activatorProps }">
                     <v-btn
                       icon="mdi-dots-vertical"
                       variant="text"
                       size="small"
-                      v-bind="props"
+                      v-bind="activatorProps"
                     />
                   </template>
                   <v-list>
-                    <v-list-item v-if="item.type === 'directory'" @click="navigateToDirectory(item.id)">
+                    <v-list-item
+                      v-if="item.type === 'directory'"
+                      @click="navigateToDirectory(item.id)"
+                    >
                       <v-list-item-title>
-                        <v-icon left>mdi-folder-open</v-icon>
+                        <v-icon left>
+                          mdi-folder-open
+                        </v-icon>
                         Open
                       </v-list-item-title>
                     </v-list-item>
-                    <v-list-item v-else @click="downloadDocument(item)">
+                    <v-list-item
+                      v-else
+                      @click="downloadDocument(item)"
+                    >
                       <v-list-item-title>
-                        <v-icon left>mdi-download</v-icon>
+                        <v-icon left>
+                          mdi-download
+                        </v-icon>
                         Download
                       </v-list-item-title>
                     </v-list-item>
                     <v-list-item @click="editItem(item)">
                       <v-list-item-title>
-                        <v-icon left>mdi-pencil</v-icon>
+                        <v-icon left>
+                          mdi-pencil
+                        </v-icon>
                         Edit
                       </v-list-item-title>
                     </v-list-item>
-                    <v-list-item @click="deleteItem(item)" class="text-error">
+                    <v-list-item
+                      class="text-error"
+                      @click="deleteItem(item)"
+                    >
                       <v-list-item-title>
-                        <v-icon left>mdi-delete</v-icon>
+                        <v-icon left>
+                          mdi-delete
+                        </v-icon>
                         Delete
                       </v-list-item-title>
                     </v-list-item>
@@ -191,10 +294,13 @@
               </template>
 
               <!-- Expanded details -->
-              <template v-slot:expanded-row="{ item }">
+              <template #expanded-row="{ item }">
                 <tr>
                   <td colspan="7">
-                    <v-card flat class="ma-2">
+                    <v-card
+                      flat
+                      class="ma-2"
+                    >
                       <v-card-text>
                         <v-row>
                           <v-col cols="6">
@@ -203,13 +309,22 @@
                           <v-col cols="6">
                             <strong>Last Modified:</strong> {{ formatDateTime(item.updated_at) }}
                           </v-col>
-                          <v-col cols="6" v-if="item.purpose">
+                          <v-col
+                            v-if="item.purpose"
+                            cols="6"
+                          >
                             <strong>Purpose:</strong> {{ item.purpose }}
                           </v-col>
-                          <v-col cols="6" v-if="item.version">
+                          <v-col
+                            v-if="item.version"
+                            cols="6"
+                          >
                             <strong>Version:</strong> {{ item.version }}
                           </v-col>
-                          <v-col cols="12" v-if="item.tags && item.tags.length">
+                          <v-col
+                            v-if="item.tags && item.tags.length"
+                            cols="12"
+                          >
                             <strong>Tags:</strong>
                             <v-chip
                               v-for="tag in item.tags"
@@ -221,8 +336,11 @@
                               {{ tag.tag_name }}
                             </v-chip>
                           </v-col>
-                          <v-col cols="12" v-if="item.file_path">
-                            <strong>Path:</strong> {{ item.file_path }}
+                          <v-col
+                            v-if="item.file_path"
+                            cols="12"
+                          >
+                            <strong>Path:</strong> {{ getFormattedPath(item) }}
                           </v-col>
                         </v-row>
                       </v-card-text>
@@ -234,7 +352,10 @@
           </div>
 
           <!-- Grid View -->
-          <div v-else class="pa-4">
+          <div
+            v-else
+            class="pa-4"
+          >
             <v-row>
               <v-col
                 v-for="item in allItems"
@@ -246,9 +367,9 @@
               >
                 <v-card
                   :ripple="false"
-                  @click="handleItemClick(item)"
                   class="cursor-pointer"
                   hover
+                  @click="handleItemClick(item)"
                 >
                   <v-card-text class="text-center pa-4">
                     <v-icon
@@ -314,9 +435,9 @@ const headers = [
   { title: 'Type', key: 'type', sortable: true, width: '12%' },
   { title: 'Size/Count', key: 'size', sortable: false, width: '15%' },
   { title: 'Owner', key: 'owner', sortable: true, width: '15%' },
-  { title: 'Modified', key: 'modified', sortable: true, width: '15%' },
+  { title: 'Modified', key: 'modified', sortable: true, width: '12%' },
   { title: 'Status', key: 'status', sortable: true, width: '8%' },
-  { title: '', key: 'actions', sortable: false, width: '5%' }
+  { title: '', key: 'actions', sortable: false, width: '8%' }
 ]
 
 // Computed
@@ -460,6 +581,27 @@ const formatTime = (dateString) => {
 const formatDateTime = (dateString) => {
   if (!dateString) return '-'
   return new Date(dateString).toLocaleString()
+}
+
+const getDocumentPath = (item) => {
+  if (item.type === 'directory') return null
+  return item.directory_path || item.file_path || 'Root'
+}
+
+const getFormattedPath = (item) => {
+  const path = getDocumentPath(item)
+  if (!path || path === 'Root') {
+    return 'Root'
+  }
+  // Replace forward slashes with arrow icons
+  return path.replace(/\//g, ' ➤ ').replace(/^ ➤ /, '')
+}
+
+const getFileName = (item) => {
+  if (item.type === 'directory' || !item.file_path) return null
+  // Extract filename from file_path
+  const pathParts = item.file_path.split('/')
+  return pathParts[pathParts.length - 1]
 }
 
 // Event handlers

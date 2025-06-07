@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DirectorySeeder extends Seeder
@@ -36,15 +35,15 @@ class DirectorySeeder extends Seeder
             ['name' => 'RAG Systems', 'parent_id' => $parentIds['Innovation Projects'], 'created_by' => 1],
             ['name' => 'AI Research', 'parent_id' => $parentIds['Innovation Projects'], 'created_by' => 2],
             ['name' => 'Mobile Apps', 'parent_id' => $parentIds['Innovation Projects'], 'created_by' => 3],
-            
+
             // Technical Documentation children
             ['name' => 'API Documentation', 'parent_id' => $parentIds['Technical Documentation'], 'created_by' => 1],
             ['name' => 'System Architecture', 'parent_id' => $parentIds['Technical Documentation'], 'created_by' => 2],
-            
+
             // Process Manuals children
             ['name' => 'Quality Assurance', 'parent_id' => $parentIds['Process Manuals'], 'created_by' => 2],
             ['name' => 'Development Workflow', 'parent_id' => $parentIds['Process Manuals'], 'created_by' => 3],
-            
+
             // Training Materials children
             ['name' => 'Onboarding', 'parent_id' => $parentIds['Training Materials'], 'created_by' => 1],
             ['name' => 'Technical Training', 'parent_id' => $parentIds['Training Materials'], 'created_by' => 3],

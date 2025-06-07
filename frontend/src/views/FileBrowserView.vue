@@ -1,7 +1,9 @@
 <template>
   <v-container fluid>
     <div class="mb-6">
-      <h1 class="text-h4 font-weight-bold">File Browser</h1>
+      <h1 class="text-h4 font-weight-bold">
+        File Browser
+      </h1>
     </div>
 
     <FileBrowser
@@ -13,7 +15,10 @@
     />
 
     <!-- Create Folder Dialog -->
-    <v-dialog v-model="showCreateFolderDialog" max-width="500">
+    <v-dialog
+      v-model="showCreateFolderDialog"
+      max-width="500"
+    >
       <v-card>
         <v-card-title>Create New Folder</v-card-title>
         <v-card-text>
@@ -27,7 +32,9 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn @click="showCreateFolderDialog = false">Cancel</v-btn>
+          <v-btn @click="showCreateFolderDialog = false">
+            Cancel
+          </v-btn>
           <v-btn
             color="primary"
             :loading="creatingFolder"
@@ -40,10 +47,23 @@
     </v-dialog>
 
     <!-- Upload Dialog -->
-    <v-dialog v-model="showUploadDialog" max-width="600">
+    <v-dialog
+      v-model="showUploadDialog"
+      max-width="600"
+    >
       <v-card>
         <v-card-title>Upload Documents</v-card-title>
         <v-card-text>
+          <!-- Current Location Display -->
+          <v-alert
+            type="info"
+            variant="tonal"
+            density="compact"
+            class="mb-4"
+          >
+            <v-icon slot="prepend">mdi-folder</v-icon>
+            <strong>Upload Location:</strong> {{ currentDirectoryPath }}
+          </v-alert>
           <v-file-input
             v-model="selectedFiles"
             label="Select files"
@@ -68,19 +88,41 @@
             class="mt-2"
           />
           
-          <v-select
-            v-model="uploadTags"
-            :items="tagOptions"
-            label="Tags"
-            variant="outlined"
-            multiple
-            chips
-            class="mt-2"
-          />
+          <v-row class="mt-2">
+            <v-col
+              cols="12"
+              md="6"
+            >
+              <v-select
+                v-model="uploadTags"
+                :items="tagOptions"
+                label="Tags"
+                variant="outlined"
+                multiple
+                chips
+              />
+            </v-col>
+            <v-col
+              cols="12"
+              md="6"
+            >
+              <v-text-field
+                v-model="uploadVersion"
+                label="Version"
+                variant="outlined"
+                min="0.1"
+                step="0.1"
+                hint="Default version is 1.0 for new documents"
+                persistent-hint
+              />
+            </v-col>
+          </v-row>
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn @click="showUploadDialog = false">Cancel</v-btn>
+          <v-btn @click="showUploadDialog = false">
+            Cancel
+          </v-btn>
           <v-btn
             color="primary"
             :loading="uploading"
@@ -94,7 +136,10 @@
     </v-dialog>
 
     <!-- Edit Dialog -->
-    <v-dialog v-model="showEditDialog" max-width="500">
+    <v-dialog
+      v-model="showEditDialog"
+      max-width="500"
+    >
       <v-card>
         <v-card-title>Edit {{ editingItem?.type === 'directory' ? 'Folder' : 'Document' }}</v-card-title>
         <v-card-text>
@@ -124,7 +169,9 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn @click="showEditDialog = false">Cancel</v-btn>
+          <v-btn @click="showEditDialog = false">
+            Cancel
+          </v-btn>
           <v-btn
             color="primary"
             :loading="editing"
@@ -137,19 +184,31 @@
     </v-dialog>
 
     <!-- Delete Confirmation Dialog -->
-    <v-dialog v-model="showDeleteDialog" max-width="400">
+    <v-dialog
+      v-model="showDeleteDialog"
+      max-width="400"
+    >
       <v-card>
-        <v-card-title class="text-error">Confirm Delete</v-card-title>
+        <v-card-title class="text-error">
+          Confirm Delete
+        </v-card-title>
         <v-card-text>
           Are you sure you want to delete "{{ deletingItem?.name }}"?
-          <div v-if="deletingItem?.type === 'directory'" class="text-warning mt-2">
-            <v-icon left>mdi-alert</v-icon>
+          <div
+            v-if="deletingItem?.type === 'directory'"
+            class="text-warning mt-2"
+          >
+            <v-icon left>
+              mdi-alert
+            </v-icon>
             This will also delete all contents inside this folder.
           </div>
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn @click="showDeleteDialog = false">Cancel</v-btn>
+          <v-btn @click="showDeleteDialog = false">
+            Cancel
+          </v-btn>
           <v-btn
             color="error"
             :loading="deleting"
@@ -193,6 +252,8 @@ const selectedFiles = ref([])
 const uploadType = ref('General_Doc')
 const uploadPurpose = ref('')
 const uploadTags = ref([])
+const uploadVersion = ref('1.0')
+const currentDirectoryPath = ref('/')
 
 // Edit
 const editingItem = ref(null)
@@ -220,7 +281,8 @@ const tagOptions = [
 ]
 
 // Event handlers
-const handleUpload = () => {
+const handleUpload = async () => {
+  await updateCurrentDirectoryPath()
   showUploadDialog.value = true
 }
 
@@ -289,6 +351,7 @@ const uploadFiles = async () => {
     formData.append('type', uploadType.value)
     formData.append('purpose', uploadPurpose.value)
     formData.append('directory_id', getCurrentDirectoryId())
+    formData.append('version', uploadVersion.value)
     
     uploadTags.value.forEach(tag => {
       formData.append('tags[]', tag)
@@ -373,17 +436,47 @@ const getCurrentDirectoryId = () => {
   return urlParams.get('dir') || 0
 }
 
+const updateCurrentDirectoryPath = async () => {
+  // Get the current directory path from URL parameters or set to root
+  const dirParam = getCurrentDirectoryId()
+  if (dirParam === 0 || dirParam === '0') {
+    currentDirectoryPath.value = 'Root'
+  } else {
+    try {
+      // Fetch the directory path from the API
+      const response = await apiService.getDirectoryContents(dirParam)
+      const breadcrumbs = response.data.breadcrumbs || []
+      
+      // Build the path with arrows
+      if (breadcrumbs.length > 0) {
+        currentDirectoryPath.value = breadcrumbs
+          .map(crumb => crumb.name)
+          .join(' ➤ ')
+      } else {
+        currentDirectoryPath.value = 'Root'
+      }
+    } catch (error) {
+      console.error('Failed to fetch directory path:', error)
+      currentDirectoryPath.value = 'Root'
+    }
+  }
+}
+
 const resetUploadForm = () => {
   selectedFiles.value = []
   uploadType.value = 'General_Doc'
   uploadPurpose.value = ''
   uploadTags.value = []
+  uploadVersion.value = '1.0'
 }
 
-// Check for create folder action on mount
-onMounted(() => {
+// Check for actions on mount
+onMounted(async () => {
   if (route.query.action === 'create-folder') {
     showCreateFolderDialog.value = true
+  } else if (route.query.action === 'upload') {
+    await updateCurrentDirectoryPath()
+    showUploadDialog.value = true
   }
 })
 </script>

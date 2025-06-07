@@ -1,12 +1,16 @@
 <template>
   <v-container fluid>
     <div class="d-flex align-center justify-space-between mb-6">
-      <h1 class="text-h4 font-weight-bold">Documents</h1>
+      <h1 class="text-h4 font-weight-bold">
+        Documents
+      </h1>
       <v-btn
         color="primary"
         @click="showUploadDialog = true"
       >
-        <v-icon left>mdi-upload</v-icon>
+        <v-icon left>
+          mdi-upload
+        </v-icon>
         Upload Document
       </v-btn>
     </div>
@@ -16,7 +20,10 @@
         <v-card>
           <v-card-title>
             <v-row>
-              <v-col cols="12" md="4">
+              <v-col
+                cols="12"
+                md="4"
+              >
                 <v-text-field
                   v-model="searchQuery"
                   label="Search documents..."
@@ -26,7 +33,10 @@
                   @input="handleSearch"
                 />
               </v-col>
-              <v-col cols="12" md="3">
+              <v-col
+                cols="12"
+                md="3"
+              >
                 <v-select
                   v-model="typeFilter"
                   :items="documentTypes"
@@ -37,7 +47,10 @@
                   @update:model-value="handleFilter"
                 />
               </v-col>
-              <v-col cols="12" md="3">
+              <v-col
+                cols="12"
+                md="3"
+              >
                 <v-select
                   v-model="statusFilter"
                   :items="statusOptions"
@@ -48,11 +61,14 @@
                   @update:model-value="handleFilter"
                 />
               </v-col>
-              <v-col cols="12" md="2">
+              <v-col
+                cols="12"
+                md="2"
+              >
                 <v-btn
                   variant="outlined"
-                  @click="clearFilters"
                   block
+                  @click="clearFilters"
                 >
                   Clear Filters
                 </v-btn>
@@ -70,23 +86,36 @@
               show-expand
               :expanded="expanded"
             >
-              <!-- Name column with icons -->
-              <template v-slot:item.name="{ item }">
+              <!-- Name column with icons and path -->
+              <template #item.name="{ item }">
                 <div class="d-flex align-center">
-                  <v-icon :color="getTypeColor(item.type)" class="mr-3">
+                  <v-icon
+                    :color="getTypeColor(item.type)"
+                    class="mr-3"
+                  >
                     {{ getDocumentIcon(item.type) }}
                   </v-icon>
                   <div>
-                    <div class="font-weight-medium">{{ item.name }}</div>
-                    <div class="text-caption text-medium-emphasis">
-                      Version {{ item.version }}
+                    <div class="font-weight-medium">
+                      {{ item.name }}
+                    </div>
+                    <div class="d-flex align-center mt-1">
+                      <span class="text-caption text-medium-emphasis">{{ getFormattedPath(item) }}</span>
+                      <v-chip
+                        size="x-small"
+                        variant="outlined"
+                        color="primary"
+                        class="ml-2"
+                      >
+                        V {{ item.version }}
+                      </v-chip>
                     </div>
                   </div>
                 </div>
               </template>
 
               <!-- Type column -->
-              <template v-slot:item.type="{ item }">
+              <template #item.type="{ item }">
                 <v-chip
                   :color="getTypeColor(item.type)"
                   size="small"
@@ -97,22 +126,27 @@
               </template>
 
               <!-- Size column -->
-              <template v-slot:item.size="{ item }">
+              <template #item.size="{ item }">
                 <span>{{ formatFileSize(item.file_size) }}</span>
               </template>
 
               <!-- Owner column -->
-              <template v-slot:item.owner="{ item }">
+              <template #item.owner="{ item }">
                 <div class="d-flex align-center">
-                  <v-avatar size="24" class="mr-2">
-                    <v-icon size="16">mdi-account</v-icon>
+                  <v-avatar
+                    size="24"
+                    class="mr-2"
+                  >
+                    <v-icon size="16">
+                      mdi-account
+                    </v-icon>
                   </v-avatar>
                   <span>{{ item.creator?.name || 'Unknown' }}</span>
                 </div>
               </template>
 
               <!-- Date modified -->
-              <template v-slot:item.modified="{ item }">
+              <template #item.modified="{ item }">
                 <div>
                   <div>{{ formatDate(item.updated_at || item.created_at) }}</div>
                   <div class="text-caption text-medium-emphasis">
@@ -122,7 +156,7 @@
               </template>
 
               <!-- Status column -->
-              <template v-slot:item.status="{ item }">
+              <template #item.status="{ item }">
                 <v-chip
                   :color="getStatusColor(item.status)"
                   size="small"
@@ -133,14 +167,14 @@
               </template>
 
               <!-- Version column -->
-              <template v-slot:item.version="{ item }">
+              <template #item.version="{ item }">
                 <span class="font-weight-medium">{{ item.version }}</span>
               </template>
 
               <!-- Actions column -->
-              <template v-slot:item.actions="{ item }">
+              <template #item.actions="{ item }">
                 <v-menu>
-                  <template v-slot:activator="{ props }">
+                  <template #activator="{ props }">
                     <v-btn
                       icon="mdi-dots-vertical"
                       variant="text"
@@ -151,25 +185,36 @@
                   <v-list>
                     <v-list-item @click="downloadDocument(item)">
                       <v-list-item-title>
-                        <v-icon left>mdi-download</v-icon>
+                        <v-icon left>
+                          mdi-download
+                        </v-icon>
                         Download
                       </v-list-item-title>
                     </v-list-item>
                     <v-list-item @click="processDocument(item)">
                       <v-list-item-title>
-                        <v-icon left>mdi-cog</v-icon>
+                        <v-icon left>
+                          mdi-cog
+                        </v-icon>
                         Process
                       </v-list-item-title>
                     </v-list-item>
                     <v-list-item @click="editDocument(item)">
                       <v-list-item-title>
-                        <v-icon left>mdi-pencil</v-icon>
+                        <v-icon left>
+                          mdi-pencil
+                        </v-icon>
                         Edit
                       </v-list-item-title>
                     </v-list-item>
-                    <v-list-item @click="deleteDocument(item)" class="text-error">
+                    <v-list-item
+                      class="text-error"
+                      @click="deleteDocument(item)"
+                    >
                       <v-list-item-title>
-                        <v-icon left>mdi-delete</v-icon>
+                        <v-icon left>
+                          mdi-delete
+                        </v-icon>
                         Delete
                       </v-list-item-title>
                     </v-list-item>
@@ -178,10 +223,13 @@
               </template>
 
               <!-- Expanded details -->
-              <template v-slot:expanded-row="{ item }">
+              <template #expanded-row="{ item }">
                 <tr>
                   <td colspan="8">
-                    <v-card flat class="ma-2">
+                    <v-card
+                      flat
+                      class="ma-2"
+                    >
                       <v-card-text>
                         <v-row>
                           <v-col cols="6">
@@ -190,13 +238,22 @@
                           <v-col cols="6">
                             <strong>Last Modified:</strong> {{ formatDateTime(item.updated_at) }}
                           </v-col>
-                          <v-col cols="6" v-if="item.purpose">
+                          <v-col
+                            v-if="item.purpose"
+                            cols="6"
+                          >
                             <strong>Purpose:</strong> {{ item.purpose }}
                           </v-col>
-                          <v-col cols="6" v-if="item.directory">
+                          <v-col
+                            v-if="item.directory"
+                            cols="6"
+                          >
                             <strong>Directory:</strong> {{ item.directory.name }}
                           </v-col>
-                          <v-col cols="12" v-if="item.tags && item.tags.length">
+                          <v-col
+                            v-if="item.tags && item.tags.length"
+                            cols="12"
+                          >
                             <strong>Tags:</strong>
                             <v-chip
                               v-for="tag in item.tags"
@@ -208,10 +265,16 @@
                               {{ tag.tag_name }}
                             </v-chip>
                           </v-col>
-                          <v-col cols="12" v-if="item.file_path">
-                            <strong>Path:</strong> {{ item.file_path }}
+                          <v-col
+                            v-if="item.file_path"
+                            cols="12"
+                          >
+                            <strong>Path:</strong> {{ getFormattedPath(item) }}
                           </v-col>
-                          <v-col cols="12" v-if="item.metadata">
+                          <v-col
+                            v-if="item.metadata"
+                            cols="12"
+                          >
                             <strong>Metadata:</strong>
                             <pre class="text-caption">{{ JSON.stringify(item.metadata, null, 2) }}</pre>
                           </v-col>
@@ -228,7 +291,10 @@
     </v-row>
 
     <!-- Upload Dialog Placeholder -->
-    <v-dialog v-model="showUploadDialog" max-width="600">
+    <v-dialog
+      v-model="showUploadDialog"
+      max-width="600"
+    >
       <v-card>
         <v-card-title>Upload Document</v-card-title>
         <v-card-text>
@@ -236,7 +302,9 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn @click="showUploadDialog = false">Close</v-btn>
+          <v-btn @click="showUploadDialog = false">
+            Close
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -340,6 +408,19 @@ const formatDateTime = (dateString) => {
   return new Date(dateString).toLocaleString()
 }
 
+const getDocumentPath = (document) => {
+  return document.directory_path || 'Root'
+}
+
+const getFormattedPath = (document) => {
+  const path = getDocumentPath(document)
+  if (path === 'Root') {
+    return 'Root'
+  }
+  // Replace forward slashes with arrow icons
+  return path.replace(/\//g, ' ➤ ').replace(/^ ➤ /, '')
+}
+
 // New event handler
 const downloadDocument = (document) => {
   showSnackbar(`Downloading ${document.name}...`, 'info')
@@ -370,7 +451,7 @@ const fetchDocuments = async () => {
 
   try {
     await documentsStore.fetchDocuments(filters)
-  } catch (error) {
+  } catch (_error) {
     showSnackbar('Failed to fetch documents', 'error')
   }
 }
@@ -379,12 +460,12 @@ const processDocument = async (document) => {
   try {
     await documentsStore.processDocument(document.id)
     showSnackbar(`Processing initiated for ${document.name}`, 'info')
-  } catch (error) {
+  } catch (_error) {
     showSnackbar('Failed to process document', 'error')
   }
 }
 
-const editDocument = (document) => {
+const editDocument = (_document) => {
   showSnackbar('Edit functionality coming soon', 'info')
 }
 
@@ -393,7 +474,7 @@ const deleteDocument = async (document) => {
     try {
       await documentsStore.deleteDocument(document.id)
       showSnackbar('Document deleted successfully', 'success')
-    } catch (error) {
+    } catch (_error) {
       showSnackbar('Failed to delete document', 'error')
     }
   }

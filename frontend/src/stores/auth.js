@@ -17,8 +17,6 @@ export const useAuthStore = defineStore('auth', () => {
       user.value = response.data.user
       localStorage.setItem('auth_token', token.value)
       return response.data
-    } catch (error) {
-      throw error
     } finally {
       loading.value = false
     }
@@ -44,7 +42,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const response = await apiService.getUser()
       user.value = response.data
-    } catch (error) {
+    } catch (_error) {
       await logout()
     }
   }
