@@ -129,6 +129,66 @@
                     }
                 ]
             }
+        },
+        "/directories": {
+            "get": {
+                "tags": [
+                    "Directories"
+                ],
+                "summary": "Get directory tree",
+                "description": "Retrieve hierarchical directory structure with nested children",
+                "operationId": "2bff3cdbef91fa5a1e08614254888f0c",
+                "responses": {
+                    "200": {
+                        "description": "Directory tree retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "parent_id": {
+                                                "type": "integer",
+                                                "nullable": true
+                                            },
+                                            "created_by": {
+                                                "type": "integer"
+                                            },
+                                            "children": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "creator": {
+                                                "type": "object"
+                                            },
+                                            "documents": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object"
+                                                }
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
         }
     },
     "components": {
@@ -144,6 +204,10 @@
         {
             "name": "Authentication",
             "description": "Authentication"
+        },
+        {
+            "name": "Directories",
+            "description": "Directories"
         }
     ]
 }

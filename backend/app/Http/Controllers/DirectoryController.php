@@ -4,9 +4,37 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Directory;
+use OpenApi\Attributes as OA;
 
 class DirectoryController extends Controller
 {
+    #[OA\Get(
+        path: "/directories",
+        summary: "Get directory tree",
+        description: "Retrieve hierarchical directory structure with nested children",
+        security: [["bearerAuth" => []]],
+        tags: ["Directories"],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Directory tree retrieved successfully",
+                content: new OA\JsonContent(
+                    type: "array",
+                    items: new OA\Items(
+                        properties: [
+                            new OA\Property(property: "id", type: "integer"),
+                            new OA\Property(property: "name", type: "string"),
+                            new OA\Property(property: "parent_id", type: "integer", nullable: true),
+                            new OA\Property(property: "created_by", type: "integer"),
+                            new OA\Property(property: "children", type: "array", items: new OA\Items(type: "object")),
+                            new OA\Property(property: "creator", type: "object"),
+                            new OA\Property(property: "documents", type: "array", items: new OA\Items(type: "object"))
+                        ]
+                    )
+                )
+            )
+        ]
+    )]
     public function index()
     {
         $directories = Directory::with(['children', 'creator', 'documents'])
